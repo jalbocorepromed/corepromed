@@ -13,11 +13,11 @@
   <iframe id="app-frame" src="https://script.google.com/macros/s/AKfycbzLSd_sXClpRUsVYlim08YOP8PbqAOXkCmiKmbmWA5KVyCvsE5YwhFp1ygch67q3fM0/exec"></iframe>
 
   <script>
-    // Listen for tab change events from Google Apps Script inside the iframe
+    // Listen for tab switch messages sent from inside the iframe
     window.addEventListener('message', function(event) {
       if (event.data && event.data.type === 'CHANGE_TAB') {
-        // Updates the parent URL hash without reloading the page
-        window.location.hash = event.data.tab;
+        // Updates the parent browser URL hash without reloading
+        history.pushState(null, null, '#' + event.data.tab);
       }
     });
   </script>
