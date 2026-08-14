@@ -3154,18 +3154,24 @@
           })
           .addNewLeadFromSidebar(payloadPacket);
       }
+<script>
+  function switchTab(tabName) {
+    // 1. Hide all tabs and display the active one in your Web App UI
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.style.display = 'none';
+    });
+    document.getElementById(tabName).style.display = 'block';
 
-function selectTab(tabName) {
-  // 1. Run your regular JavaScript code to switch tabs in UI
-  document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-  document.getElementById(tabName).style.display = 'block';
+    // 2. Send tab event to the outer GitHub page
+    if (window.parent) {
+      window.parent.postMessage({
+        type: 'CHANGE_TAB',
+        tab: tabName
+      }, '*');
+    }
+  }
+</script>
 
-  // 2. Send a message to the outer GitHub page to update the URL
-  window.parent.postMessage({
-    type: 'CHANGE_TAB',
-    tab: tabName
-  }, '*');
-}
 
     }
   </script>
