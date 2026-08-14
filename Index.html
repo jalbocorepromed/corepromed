@@ -3153,24 +3153,8 @@
             actionButton.innerText = "Save Record";
           })
           .addNewLeadFromSidebar(payloadPacket);
-      
-  function switchTab(tabName) {
-    // 1. Hide all tabs and display the active one in your Web App UI
-    document.querySelectorAll('.tab-content').forEach(tab => {
-      tab.style.display = 'none';
-    });
-    document.getElementById(tabName).style.display = 'block';
+      }
 
-    // 2. Send tab event to the outer GitHub page
-    if (window.parent) {
-      window.parent.postMessage({
-        type: 'CHANGE_TAB',
-        tab: tabName
-      }, '*');
-    }
-  
-
-    }
   </script>
 </body>
 </html>
