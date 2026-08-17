@@ -100,9 +100,6 @@ function getCurrentUserInfo() {
   };
 }
 
-/**
- * Fetches call logs across all sheets, optionally filtered by a target calendar date (YYYY-MM-DD).
- */
 function getAllCallLogs(targetDate) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -592,6 +589,7 @@ function getTabData(tabKey) {
       }
 
       const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || "";
+      const notesVal = recordData["Notes"] || recordData["notes"] || recordData["Recent Call Notes"] || recordData["Call History Log"] || recordData["History Log"] || "";
 
       records.push({
         row: i + 1,
@@ -607,7 +605,7 @@ function getTabData(tabKey) {
         email: recordData["Email Address"] || recordData["email address"] || recordData["Email"] || recordData["email"] || "",
         status: statusVal,
         outcome: outcomeVal,
-        notes: recordData["Notes"] || recordData["notes"] || recordData["Call History Log"] || "",
+        notes: notesVal,
         _dataMap: recordData
       });
     }
@@ -669,7 +667,13 @@ function saveTabCallRecord(data) {
       setColVal("phone number", data.phone || "");
       setColVal("email address", data.email || "");
       setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
-      setColVal("notes", formattedNotes);
+
+      // Dynamically match any note/history column headers
+      rawHeaders.forEach((h, idx) => {
+        if (h.includes("note") || h.includes("history")) {
+          rowArr[idx] = formattedNotes;
+        }
+      });
 
       sheet.appendRow(rowArr);
     } else {
@@ -750,12 +754,23 @@ function updateTabCallRecord(data) {
     updateCol(statusColName.toLowerCase(), statusOrOutcomeVal);
 
     if (data.notes && data.notes.trim() !== "") {
-      const notesIdx = rawHeaders.indexOf("notes");
-      if (notesIdx >= 0) {
-        const currentNotesVal = String(sheet.getRange(row, notesIdx + 1).getValue() || "").trim();
-        const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.notes.trim()}`;
-        const newNotesVal = currentNotesVal ? `${formattedNote}\n${currentNotesVal}` : formattedNote;
-        sheet.getRange(row, notesIdx + 1).setValue(newNotesVal);
+      const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.notes.trim()}`;
+      
+      let noteUpdated = false;
+      rawHeaders.forEach((h, idx) => {
+        if (h.includes("note") || h.includes("history")) {
+          const currentNotesVal = String(sheet.getRange(row, idx + 1).getValue() || "").trim();
+          const newNotesVal = currentNotesVal ? `${formattedNote}\n${currentNotesVal}` : formattedNote;
+          sheet.getRange(row, idx + 1).setValue(newNotesVal);
+          noteUpdated = true;
+        }
+      });
+
+      if (!noteUpdated) {
+        // Fallback to appended column if no notes column header exists
+        const lastCol = sheet.getLastColumn();
+        sheet.getRange(1, lastCol + 1).setValue("Notes").setFontWeight("bold");
+        sheet.getRange(row, lastCol + 1).setValue(formattedNote);
       }
     }
 
