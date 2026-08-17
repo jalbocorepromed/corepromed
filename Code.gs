@@ -668,7 +668,6 @@ function saveTabCallRecord(data) {
       setColVal("email address", data.email || "");
       setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
 
-      // Dynamically match any note/history column headers
       rawHeaders.forEach((h, idx) => {
         if (h.includes("note") || h.includes("history")) {
           rowArr[idx] = formattedNotes;
@@ -767,7 +766,6 @@ function updateTabCallRecord(data) {
       });
 
       if (!noteUpdated) {
-        // Fallback to appended column if no notes column header exists
         const lastCol = sheet.getLastColumn();
         sheet.getRange(1, lastCol + 1).setValue("Notes").setFontWeight("bold");
         sheet.getRange(row, lastCol + 1).setValue(formattedNote);
