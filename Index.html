@@ -126,14 +126,16 @@
         <!-- RECORDS VIEW -->
         <div id="recordsViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
-            <div class="flex items-center gap-3">
+            <div>
               <h2 class="text-base font-bold text-slate-900 tracking-tight">Leads Feed Records</h2>
-              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </button>
             </div>
 
             <div class="flex items-center space-x-2">
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-2 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer text-xs">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+
               <button onclick="openCallLogsModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3.5 py-2 rounded-md transition duration-150 shadow-xs tracking-wide cursor-pointer text-xs flex items-center space-x-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span>Call Logs View</span>
@@ -180,16 +182,16 @@
         <div id="metricsViewContainer" class="flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 mb-4 gap-4">
             <div>
-              <div class="flex items-center gap-3">
-                <h3 class="text-base font-bold text-slate-900 tracking-tight">Call Traction Metrics</h3>
-                <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
-              </div>
+              <h3 class="text-base font-bold text-slate-900 tracking-tight">Call Traction Metrics</h3>
               <p class="text-[11px] text-slate-400">Real-time engagement activity analytics pipeline data metrics.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg shadow-2xs flex items-center space-x-1 cursor-pointer text-xs">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+
               <div class="flex items-center space-x-2 text-xs font-medium bg-slate-50 border border-slate-200 p-1.5 rounded-lg shadow-2xs">
                 <div class="flex items-center space-x-1">
                   <span class="text-slate-500 text-[10px]">From:</span>
@@ -270,11 +272,8 @@
         <div id="clientDirectoryViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <h3 class="text-base font-bold text-slate-900 tracking-tight">Client Directory</h3>
-                <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
                 <span id="clientDirectoryCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
               </div>
               <p class="text-[11px] text-slate-400">Client directory records, activity history, and contact engagement tracking.</p>
@@ -297,6 +296,10 @@
                 </button>
                 <div id="clientDirectoryColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
               </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
             </div>
           </div>
 
@@ -314,11 +317,8 @@
         <div id="cpm2024MasterListViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <h3 class="text-base font-bold text-slate-900 tracking-tight">CPM 2024 Master List</h3>
-                <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
                 <span id="cpm2024MasterListCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
               </div>
               <p class="text-[11px] text-slate-400">Master account directory, logistics data, and call records log.</p>
@@ -341,6 +341,10 @@
                 </button>
                 <div id="cpm2024MasterListColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
               </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
             </div>
           </div>
 
@@ -358,11 +362,8 @@
         <div id="homeHealthViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <h3 class="text-base font-bold text-slate-900 tracking-tight">Home Health</h3>
-                <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
                 <span id="homeHealthCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
               </div>
               <p class="text-[11px] text-slate-400">Home Health account directory, agency leads, and call logs.</p>
@@ -385,6 +386,10 @@
                 </button>
                 <div id="homeHealthColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
               </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
             </div>
           </div>
 
@@ -402,11 +407,8 @@
         <div id="hospiceViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <h3 class="text-base font-bold text-slate-900 tracking-tight">Hospice</h3>
-                <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="p-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#1A75BC] rounded-md transition cursor-pointer border border-slate-200">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
                 <span id="hospiceCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
               </div>
               <p class="text-[11px] text-slate-400">Hospice account directory, agency leads, and call logs.</p>
@@ -429,6 +431,10 @@
                 </button>
                 <div id="hospiceColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
               </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
             </div>
           </div>
 
