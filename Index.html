@@ -268,7 +268,7 @@
 
         </div>
 
-        <!-- TAB 1: CLIENT DIRECTORY VIEW -->
+       <!-- TAB 1: CLIENT DIRECTORY VIEW -->
         <div id="clientDirectoryViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
@@ -280,42 +280,28 @@
             </div>
           </div>
 
-          <!-- Controls Bar: Search on Left, Filters + Refresh side-by-side on Right -->
-<div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
-  <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-    <span class="font-semibold text-slate-500">Filter Data:</span>
-    <input type="text" id="clientDirectorySearchInput" onkeyup="renderTabRecordsTable('clientDirectory')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
-  </div>
-  <!-- Controls Bar -->
-<div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
-  <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-    <span class="font-semibold text-slate-500">Filter Data:</span>
-    <input type="text" id="homeHealthSearchInput" onkeyup="renderTabRecordsTable('homeHealth')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
-  </div>
-  
-  <div class="flex items-center space-x-2">
-    <!-- Clear Filters Button -->
-    <button id="homeHealthClearColumnFiltersBtn" onclick="clearAllColumnFilters('homeHealth')" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md transition shadow-2xs flex items-center space-x-1 cursor-pointer">
-      <span>✕ Clear Column Filters</span>
-    </button>
-    
-    <!-- Visible Columns Dropdown Menu -->
-    <div class="relative">
-      <button onclick="toggleColumnMenu('homeHealth')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
-        <span>⚙️ Visible Columns</span>
-      </button>
-      <div id="homeHealthColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
-    </div>
-
-    <!-- Refresh Button (Positioned Far Right) -->
-    <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
-      <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-      </svg>
-      <span>Refresh Data</span>
-    </button>
-  </div>
-</div>
+          <!-- Controls Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+              <span class="font-semibold text-slate-500">Filter Data:</span>
+              <input type="text" id="clientDirectorySearchInput" onkeyup="renderTabRecordsTable('clientDirectory')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="clientDirectoryClearColumnFiltersBtn" onclick="clearAllColumnFilters('clientDirectory')" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md transition shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <span>✕ Clear Column Filters</span>
+              </button>
+              <div class="relative">
+                <button onclick="toggleColumnMenu('clientDirectory')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                  <span>⚙️ Visible Columns</span>
+                </button>
+                <div id="clientDirectoryColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
+              </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
 
           <div id="clientDirectoryFilterBar" class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0 custom-scroll"></div>
 
@@ -327,6 +313,140 @@
           </div>
         </div>
 
+        <!-- TAB 2: CPM 2024 MASTER LIST VIEW -->
+        <div id="cpm2024MasterListViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-slate-900 tracking-tight">CPM 2024 Master List</h3>
+                <span id="cpm2024MasterListCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Master account directory, logistics data, and call records log.</p>
+            </div>
+          </div>
+
+          <!-- Controls Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+              <span class="font-semibold text-slate-500">Filter Data:</span>
+              <input type="text" id="cpm2024MasterListSearchInput" onkeyup="renderTabRecordsTable('cpm2024MasterList')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="cpm2024MasterListClearColumnFiltersBtn" onclick="clearAllColumnFilters('cpm2024MasterList')" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md transition shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <span>✕ Clear Column Filters</span>
+              </button>
+              <div class="relative">
+                <button onclick="toggleColumnMenu('cpm2024MasterList')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                  <span>⚙️ Visible Columns</span>
+                </button>
+                <div id="cpm2024MasterListColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
+              </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="cpm2024MasterListFilterBar" class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0 custom-scroll"></div>
+
+          <div class="flex-1 w-full overflow-auto custom-scroll border border-slate-100 rounded-lg">
+            <div class="min-w-max text-left text-[11px]">
+              <div id="cpm2024MasterListTableHeader" class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold sticky top-0 z-10 shadow-2xs flex items-center p-2.5 min-w-max"></div>
+              <div id="cpm2024MasterListTableBody" class="w-full flex flex-col min-w-max"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: HOME HEALTH VIEW -->
+        <div id="homeHealthViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-slate-900 tracking-tight">Home Health</h3>
+                <span id="homeHealthCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Home Health account directory, agency leads, and call logs.</p>
+            </div>
+          </div>
+
+          <!-- Controls Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+              <span class="font-semibold text-slate-500">Filter Data:</span>
+              <input type="text" id="homeHealthSearchInput" onkeyup="renderTabRecordsTable('homeHealth')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="homeHealthClearColumnFiltersBtn" onclick="clearAllColumnFilters('homeHealth')" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md transition shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <span>✕ Clear Column Filters</span>
+              </button>
+              <div class="relative">
+                <button onclick="toggleColumnMenu('homeHealth')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                  <span>⚙️ Visible Columns</span>
+                </button>
+                <div id="homeHealthColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
+              </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="homeHealthFilterBar" class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0 custom-scroll"></div>
+
+          <div class="flex-1 w-full overflow-auto custom-scroll border border-slate-100 rounded-lg">
+            <div class="min-w-max text-left text-[11px]">
+              <div id="homeHealthTableHeader" class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold sticky top-0 z-10 shadow-2xs flex items-center p-2.5 min-w-max"></div>
+              <div id="homeHealthTableBody" class="w-full flex flex-col min-w-max"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: HOSPICE VIEW -->
+        <div id="hospiceViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-slate-900 tracking-tight">Hospice</h3>
+                <span id="hospiceCountBadge" class="bg-blue-100 text-[#1A75BC] border border-blue-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 Records</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Hospice account directory, agency leads, and call logs.</p>
+            </div>
+          </div>
+
+          <!-- Controls Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+              <span class="font-semibold text-slate-500">Filter Data:</span>
+              <input type="text" id="hospiceSearchInput" onkeyup="renderTabRecordsTable('hospice')" placeholder="Search records..." class="w-full sm:w-64 px-2.5 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#1A75BC]">
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="hospiceClearColumnFiltersBtn" onclick="clearAllColumnFilters('hospice')" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md transition shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <span>✕ Clear Column Filters</span>
+              </button>
+              <div class="relative">
+                <button onclick="toggleColumnMenu('hospice')" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                  <span>⚙️ Visible Columns</span>
+                </button>
+                <div id="hospiceColumnMenu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-30 max-h-60 overflow-y-auto custom-scroll"></div>
+              </div>
+              <button onclick="refreshAllSystemData()" title="Refresh All CRM Data" class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-medium px-3 py-1 rounded-md shadow-2xs flex items-center space-x-1 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-[#1A75BC]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="hospiceFilterBar" class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0 custom-scroll"></div>
+
+          <div class="flex-1 w-full overflow-auto custom-scroll border border-slate-100 rounded-lg">
+            <div class="min-w-max text-left text-[11px]">
+              <div id="hospiceTableHeader" class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold sticky top-0 z-10 shadow-2xs flex items-center p-2.5 min-w-max"></div>
+              <div id="hospiceTableBody" class="w-full flex flex-col min-w-max"></div>
+            </div>
+          </div>
+        </div>
         <!-- TAB 2: CPM 2024 MASTER LIST VIEW -->
         <div id="cpm2024MasterListViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
