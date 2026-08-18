@@ -268,7 +268,7 @@
 
         </div>
 
-       <!-- TAB 1: CLIENT DIRECTORY VIEW -->
+        <!-- TAB 1: CLIENT DIRECTORY VIEW -->
         <div id="clientDirectoryViewContainer" class="hidden flex-1 flex flex-col p-6 min-h-0 overflow-y-auto custom-scroll animate-in fade-in duration-150">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 shrink-0">
             <div>
@@ -448,17 +448,9 @@
           </div>
         </div>
 
-          <div id="cpm2024MasterListFilterBar" class="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0 custom-scroll"></div>
-
-          <div class="flex-1 w-full overflow-auto custom-scroll border border-slate-100 rounded-lg">
-            <div class="min-w-max text-left text-[11px]">
-              <div id="cpm2024MasterListTableHeader" class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold sticky top-0 z-10 shadow-2xs flex items-center p-2.5 min-w-max"></div>
-              <div id="cpm2024MasterListTableBody" class="w-full flex flex-col min-w-max"></div>
-            </div>
-          </div>
-        </div>
-
-        
+      </div>
+    </div>
+  </div>
 
   <!-- CALL LOGS DASHBOARD MODAL -->
   <div id="callLogsModalOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4">
@@ -635,7 +627,6 @@
                 <option value="Tier 3">Tier 3</option>
                 <option value="Tier 4">Tier 4</option>
                 <option value="Joan">Joan</option>
-              
               </select>
             </div>
             <div>
@@ -693,7 +684,7 @@
                 <option value="Tier 2">Tier 2</option>
                 <option value="Tier 3">Tier 3</option>
                 <option value="Tier 4">Tier 4</option>
-                 <option value="Joan">Joan</option>
+                <option value="Joan">Joan</option>
               </select>
             </div>
           </div>
@@ -1018,7 +1009,7 @@
               <option value="Tier 2">Tier 2</option>
               <option value="Tier 3">Tier 3</option>
               <option value="Tier 4">Tier 4</option>
-               <option value="Joan">Joan</option>
+              <option value="Joan">Joan</option>
             </select>
           </div>
         </div>
@@ -1374,57 +1365,104 @@
     }
 
     function renderCallLogsTable(logs) {
-      const tbody = document.getElementById('callLogsTableBody');
-      const emptyState = document.getElementById('callLogsEmptyState');
-      const tableContainer = document.getElementById('callLogsTableContainer');
+  const tbody = document.getElementById('callLogsTableBody');
+  const emptyState = document.getElementById('callLogsEmptyState');
+  const tableContainer = document.getElementById('callLogsTableContainer');
 
-      tbody.innerHTML = '';
+  tbody.innerHTML = '';
 
-      if (!logs || logs.length === 0) {
-        emptyState.classList.remove('hidden');
-        tableContainer.classList.add('hidden');
-        document.getElementById('callLogMetricTotal').innerText = '0';
-        document.getElementById('callLogMetricAccounts').innerText = '0';
-        return;
+  if (!logs || logs.length === 0) {
+    emptyState.classList.remove('hidden');
+    tableContainer.classList.add('hidden');
+    document.getElementById('callLogMetricTotal').innerText = '0';
+    document.getElementById('callLogMetricAccounts').innerText = '0';
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  tableContainer.classList.remove('hidden');
+
+  const uniqueAccounts = new Set();
+
+  logs.forEach((item, index) => {
+    if (item.accountName) uniqueAccounts.add(item.accountName.toLowerCase().trim());
+
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-amber-50/70 cursor-pointer transition duration-150";
+    tr.title = "Click to view full info and edit record";
+    
+    // Clicking anywhere on the row opens full details & edit options
+    tr.onclick = () => openEditModalFromCallLog(item);
+
+    tr.innerHTML = `
+      <td class="p-3 font-mono font-bold text-slate-800 shrink-0 whitespace-nowrap w-[100px]">
+        <div>${item.callDate || '-'}</div>
+        <div class="text-[9px] text-slate-400 font-normal">${item.timeMeta || ''}</div>
+      </td>
+      <td class="p-3 font-semibold text-slate-600 truncate w-[130px]">
+        <span class="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
+          ${item.source || 'General'}
+        </span>
+      </td>
+      <td class="p-3 font-bold text-slate-900 truncate w-[170px]">
+        <span class="text-[#1A75BC] hover:underline">${item.accountName || '-'}</span>
+      </td>
+      <td class="p-3 font-mono text-slate-700 truncate w-[125px]">${item.phone || '-'}</td>
+      <td class="p-3 truncate w-[140px]">
+        <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(item.status)}">
+          ${item.status || 'Logged'}
+        </span>
+      </td>
+      <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[260px] min-w-[220px] flex items-center justify-between gap-2">
+        <span>${item.notes || '-'}</span>
+        <button type="button" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] px-2 py-1 rounded shrink-0 shadow-2xs">
+          Edit
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('callLogMetricTotal').innerText = logs.length;
+  document.getElementById('callLogMetricAccounts').innerText = uniqueAccounts.size;
+}
+
+function openEditModalFromCallLog(logItem) {
+  // If the log originates from the main Leads tab
+  if (logItem.tabKey === 'records') {
+    closeCallLogsModal();
+    loadTargetRowDetailsToWorkspace(logItem.row, null, 'edit');
+    return;
+  }
+
+  // If the log originates from any Directory tab
+  closeCallLogsModal();
+  openEditEntryModal();
+  switchEditModalDirectoryTab(logItem.tabKey);
+
+  // Load record details into the Edit modal form
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res && res.records) {
+        const record = res.records.find(r => r.row === logItem.row);
+        if (record) {
+          selectRecordForModalEdit(record);
+        } else {
+          // Fallback if exact record row isn't found
+          selectRecordForModalEdit({
+            row: logItem.row,
+            callDate: logItem.callDate,
+            accountName: logItem.accountName,
+            phone: logItem.phone,
+            status: logItem.status,
+            outcome: logItem.status,
+            notes: logItem.notes
+          });
+        }
       }
-
-      emptyState.classList.add('hidden');
-      tableContainer.classList.remove('hidden');
-
-      const uniqueAccounts = new Set();
-
-      logs.forEach(item => {
-        if (item.accountName) uniqueAccounts.add(item.accountName.toLowerCase().trim());
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition duration-150";
-
-        tr.innerHTML = `
-          <td class="p-3 font-mono font-bold text-slate-800 shrink-0 whitespace-nowrap w-[100px]">
-            <div>${item.callDate || '-'}</div>
-            <div class="text-[9px] text-slate-400 font-normal">${item.timeMeta || ''}</div>
-          </td>
-          <td class="p-3 font-semibold text-slate-600 truncate w-[130px]">
-            <span class="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
-              ${item.source || 'General'}
-            </span>
-          </td>
-          <td class="p-3 font-bold text-slate-900 truncate w-[170px]">${item.accountName || '-'}</td>
-          <td class="p-3 font-mono text-slate-700 truncate w-[125px]">${item.phone || '-'}</td>
-          <td class="p-3 truncate w-[140px]">
-            <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(item.status)}">
-              ${item.status || 'Logged'}
-            </span>
-          </td>
-          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[260px] min-w-[220px]">${item.notes || '-'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('callLogMetricTotal').innerText = logs.length;
-      document.getElementById('callLogMetricAccounts').innerText = uniqueAccounts.size;
-    }
-
+    })
+    .getTabData(logItem.tabKey);
+}
     function filterCallLogsTable() {
       const q = (document.getElementById('callLogSearchInput').value || '').toLowerCase().trim();
       if (!q) {

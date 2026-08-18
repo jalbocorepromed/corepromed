@@ -104,11 +104,11 @@ function getAllCallLogs(targetDate) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheetsToScan = [
-      { name: SHEET_NAME, label: "Leads" },
-      { name: CLIENT_DIRECTORY_SHEET_NAME, label: "Client Directory" },
-      { name: CPM_MASTER_LIST_SHEET_NAME, label: "CPM 2024 Master List" },
-      { name: HOME_HEALTH_SHEET_NAME, label: "Home Health" },
-      { name: HOSPICE_SHEET_NAME, label: "Hospice" }
+      { name: SHEET_NAME, label: "Leads", key: "records" },
+      { name: CLIENT_DIRECTORY_SHEET_NAME, label: "Client Directory", key: "clientDirectory" },
+      { name: CPM_MASTER_LIST_SHEET_NAME, label: "CPM 2024 Master List", key: "cpm2024MasterList" },
+      { name: HOME_HEALTH_SHEET_NAME, label: "Home Health", key: "homeHealth" },
+      { name: HOSPICE_SHEET_NAME, label: "Hospice", key: "hospice" }
     ];
 
     const logs = [];
@@ -168,6 +168,7 @@ function getAllCallLogs(targetDate) {
               if (!targetDate || targetDate === logDate) {
                 logs.push({
                   source: config.label,
+                  tabKey: config.key,
                   callDate: logDate,
                   timeMeta: logMeta,
                   accountName: accountName || "Unnamed Account",
@@ -184,6 +185,7 @@ function getAllCallLogs(targetDate) {
             if (!targetDate || targetDate === formattedDate) {
               logs.push({
                 source: config.label,
+                tabKey: config.key,
                 callDate: formattedDate,
                 timeMeta: formattedDate,
                 accountName: accountName || "Unnamed Account",
@@ -198,6 +200,7 @@ function getAllCallLogs(targetDate) {
           if (!targetDate || targetDate === formattedDate) {
             logs.push({
               source: config.label,
+              tabKey: config.key,
               callDate: formattedDate,
               timeMeta: formattedDate,
               accountName: accountName || "Unnamed Account",
