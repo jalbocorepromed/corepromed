@@ -493,7 +493,7 @@
         </div>
 
         <div class="flex items-center space-x-2 flex-1 min-w-[220px] max-w-sm">
-          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, status, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
+          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, outcome, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
         </div>
 
       </div>
@@ -535,7 +535,7 @@
                 <th class="p-3 w-[130px]">Directory Source</th>
                 <th class="p-3 w-[170px]">Account Name</th>
                 <th class="p-3 w-[125px]">Phone Number</th>
-                <th class="p-3 w-[140px]">Status / Outcome</th>
+                <th class="p-3 w-[140px]">OUTCOME</th>
                 <th class="p-3 w-[260px] min-w-[220px]">Logged Note / Details</th>
               </tr>
             </thead>
@@ -1394,6 +1394,8 @@
         // Clicking anywhere on the row opens full details & edit options
         tr.onclick = () => openEditModalFromCallLog(item);
 
+        const displayOutcome = item.outcome || item.status || 'To Call';
+
         tr.innerHTML = `
           <td class="p-3 font-mono font-bold text-slate-800 shrink-0 whitespace-nowrap w-[100px]">
             <div>${item.callDate || '-'}</div>
@@ -1409,8 +1411,8 @@
           </td>
           <td class="p-3 font-mono text-slate-700 truncate w-[125px]">${item.phone || '-'}</td>
           <td class="p-3 truncate w-[140px]">
-            <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(item.status)}">
-              ${item.status || 'To Call'}
+            <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
+              ${displayOutcome}
             </span>
           </td>
           <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[260px] min-w-[220px]">
@@ -1455,8 +1457,8 @@
                 callDate: logItem.callDate,
                 accountName: logItem.accountName,
                 phone: logItem.phone,
-                status: logItem.status,
-                outcome: logItem.status,
+                status: logItem.status || logItem.outcome,
+                outcome: logItem.outcome || logItem.status,
                 notes: logItem.notes
               });
             }
@@ -1475,7 +1477,7 @@
       const filtered = currentCallLogsMaster.filter(item => {
         return (item.accountName || '').toLowerCase().includes(q) ||
                (item.phone || '').toLowerCase().includes(q) ||
-               (item.status || '').toLowerCase().includes(q) ||
+               (item.outcome || item.status || '').toLowerCase().includes(q) ||
                (item.source || '').toLowerCase().includes(q) ||
                (item.notes || '').toLowerCase().includes(q);
       });

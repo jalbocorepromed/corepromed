@@ -126,18 +126,17 @@ function getAllCallLogs(targetDate) {
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
       
-      // Precise column resolution for Status/Outcome
-      let statusIdx = headers.indexOf("status");
-      if (statusIdx === -1) statusIdx = headers.indexOf("outcome");
+      // Precise column resolution for Outcome/Status
+      let statusIdx = headers.indexOf("outcome");
+      if (statusIdx === -1) statusIdx = headers.indexOf("status");
       if (statusIdx === -1) {
-        statusIdx = headers.findIndex(h => h === "status" || h === "outcome" || h === "call status" || h === "call outcome" || h === "lead status");
+        statusIdx = headers.findIndex(h => h === "outcome" || h === "status" || h === "call outcome" || h === "call status" || h === "lead status");
       }
       if (statusIdx === -1) {
-        statusIdx = headers.findIndex(h => (h.includes("status") || h.includes("outcome")) && !h.includes("supply") && !h.includes("billing"));
+        statusIdx = headers.findIndex(h => (h.includes("outcome") || h.includes("status")) && !h.includes("supply") && !h.includes("billing"));
       }
 
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
-
       const defaultStatus = (config.key === "records" || config.key === "clientDirectory") ? DEFAULT_STATUS : "To Call";
 
       for (let i = 1; i < data.length; i++) {
@@ -149,8 +148,8 @@ function getAllCallLogs(targetDate) {
         if (!status) status = defaultStatus;
 
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
-
         let formattedDate = "";
+
         if (rawDate instanceof Date) {
           formattedDate = Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
         } else if (rawDate) {
@@ -164,6 +163,21 @@ function getAllCallLogs(targetDate) {
 
         let notesText = notesIdx >= 0 ? String(row[notesIdx] || "").trim() : "";
 
+        const pushLog = (logDate, logMeta, logNote) => {
+          logs.push({
+            source: config.label,
+            tabKey: config.key,
+            callDate: logDate,
+            timeMeta: logMeta,
+            accountName: accountName || "Unnamed Account",
+            phone: phone || "-",
+            status: status,
+            outcome: status,
+            notes: logNote,
+            row: i + 1
+          });
+        };
+
         if (notesText) {
           const lines = notesText.split('\n');
           let parsedAnyLine = false;
@@ -176,60 +190,22 @@ function getAllCallLogs(targetDate) {
             if (match) {
               parsedAnyLine = true;
               const logDate = match[1];
-              const logMeta = match[2];
-              const logNote = match[3];
-
               if (!targetDate || targetDate === logDate) {
-                logs.push({
-                  source: config.label,
-                  tabKey: config.key,
-                  callDate: logDate,
-                  timeMeta: logMeta,
-                  accountName: accountName || "Unnamed Account",
-                  phone: phone || "-",
-                  status: status,
-                  notes: logNote || lineStr,
-                  row: i + 1
-                });
+                pushLog(logDate, match[2], match[3] || lineStr);
               }
             }
           });
 
-          if (!parsedAnyLine && formattedDate) {
-            if (!targetDate || targetDate === formattedDate) {
-              logs.push({
-                source: config.label,
-                tabKey: config.key,
-                callDate: formattedDate,
-                timeMeta: formattedDate,
-                accountName: accountName || "Unnamed Account",
-                phone: phone || "-",
-                status: status,
-                notes: notesText,
-                row: i + 1
-              });
-            }
+          if (!parsedAnyLine && formattedDate && (!targetDate || targetDate === formattedDate)) {
+            pushLog(formattedDate, formattedDate, notesText);
           }
-        } else if (formattedDate) {
-          if (!targetDate || targetDate === formattedDate) {
-            logs.push({
-              source: config.label,
-              tabKey: config.key,
-              callDate: formattedDate,
-              timeMeta: formattedDate,
-              accountName: accountName || "Unnamed Account",
-              phone: phone || "-",
-              status: status,
-              notes: "No notes recorded",
-              row: i + 1
-            });
-          }
+        } else if (formattedDate && (!targetDate || targetDate === formattedDate)) {
+          pushLog(formattedDate, formattedDate, "No notes recorded");
         }
       }
     });
 
     logs.sort((a, b) => (b.callDate || "").localeCompare(a.callDate || ""));
-
     return { success: true, logs: logs };
   } catch (err) {
     return { success: false, logs: [], error: err.toString() };
@@ -404,17 +380,16 @@ function getDailyCallBreakdown() {
 
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
 
-      let statusIdx = headers.indexOf("status");
-      if (statusIdx === -1) statusIdx = headers.indexOf("outcome");
+      let statusIdx = headers.indexOf("outcome");
+      if (statusIdx === -1) statusIdx = headers.indexOf("status");
       if (statusIdx === -1) {
-        statusIdx = headers.findIndex(h => h === "status" || h === "outcome" || h === "call status" || h === "call outcome" || h === "lead status");
+        statusIdx = headers.findIndex(h => h === "outcome" || h === "status" || h === "call status" || h === "call outcome" || h === "lead status");
       }
       if (statusIdx === -1) {
         statusIdx = headers.findIndex(h => (h.includes("status") || h.includes("outcome")) && !h.includes("supply") && !h.includes("billing"));
       }
 
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
-
       const defaultStatus = (config.key === "records" || config.key === "clientDirectory") ? DEFAULT_STATUS : "To Call";
 
       for (let i = 1; i < data.length; i++) {
@@ -617,9 +592,11 @@ function getTabData(tabKey) {
       if (tabKey === "clientDirectory") {
         const colIdx = statusIdx >= 0 ? statusIdx : outcomeIdx;
         statusVal = colIdx >= 0 ? String(row[colIdx] || DEFAULT_STATUS).trim() : DEFAULT_STATUS;
+        outcomeVal = statusVal;
       } else {
         const colIdx = outcomeIdx >= 0 ? outcomeIdx : statusIdx;
         outcomeVal = colIdx >= 0 ? String(row[colIdx] || "To Call").trim() : "To Call";
+        statusVal = outcomeVal;
       }
 
       const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || "";
@@ -677,7 +654,7 @@ function saveTabCallRecord(data) {
 
     const statusOrOutcomeVal = (data.tab === "clientDirectory") 
       ? (data.status || DEFAULT_STATUS) 
-      : (data.outcome || "To Call");
+      : (data.outcome || data.status || "To Call");
 
     const rawHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim().toLowerCase());
 
@@ -700,7 +677,8 @@ function saveTabCallRecord(data) {
       setColVal("zip", data.zip || "");
       setColVal("phone number", data.phone || "");
       setColVal("email address", data.email || "");
-      setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
+      setColVal("outcome", statusOrOutcomeVal);
+      setColVal("status", statusOrOutcomeVal);
 
       rawHeaders.forEach((h, idx) => {
         if (h.includes("note") || h.includes("history")) {
@@ -749,10 +727,9 @@ function updateTabCallRecord(data) {
     const row = parseInt(data.row, 10);
     if (!row || isNaN(row) || row <= 1) throw new Error("Invalid row selected.");
 
-    const statusColName = (data.tab === "clientDirectory") ? "Status" : "Outcome";
     const statusOrOutcomeVal = (data.tab === "clientDirectory") 
       ? (data.status || DEFAULT_STATUS) 
-      : (data.outcome || "To Call");
+      : (data.outcome || data.status || "To Call");
 
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
     const callDateFormatted = data.callDate || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
@@ -784,7 +761,8 @@ function updateTabCallRecord(data) {
     updateCol("phone", data.phone || "");
     updateCol("email address", data.email || "");
     updateCol("email", data.email || "");
-    updateCol(statusColName.toLowerCase(), statusOrOutcomeVal);
+    updateCol("outcome", statusOrOutcomeVal);
+    updateCol("status", statusOrOutcomeVal);
 
     if (data.notes && data.notes.trim() !== "") {
       const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.notes.trim()}`;
