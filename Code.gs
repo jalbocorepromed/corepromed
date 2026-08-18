@@ -125,8 +125,20 @@ function getAllCallLogs(targetDate) {
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
-      const statusIdx = headers.findIndex(h => h.includes("status") || h.includes("outcome"));
+      
+      // Precise column resolution for Status/Outcome
+      let statusIdx = headers.indexOf("status");
+      if (statusIdx === -1) statusIdx = headers.indexOf("outcome");
+      if (statusIdx === -1) {
+        statusIdx = headers.findIndex(h => h === "status" || h === "outcome" || h === "call status" || h === "call outcome" || h === "lead status");
+      }
+      if (statusIdx === -1) {
+        statusIdx = headers.findIndex(h => (h.includes("status") || h.includes("outcome")) && !h.includes("supply") && !h.includes("billing"));
+      }
+
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
+
+      const defaultStatus = (config.key === "records" || config.key === "clientDirectory") ? DEFAULT_STATUS : "To Call";
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
@@ -134,6 +146,8 @@ function getAllCallLogs(targetDate) {
         let accountName = nameIdx >= 0 ? String(row[nameIdx] || "").trim() : "";
         let phone = phoneIdx >= 0 ? String(row[phoneIdx] || "").trim() : "";
         let status = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
+        if (!status) status = defaultStatus;
+
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
 
         let formattedDate = "";
@@ -173,7 +187,7 @@ function getAllCallLogs(targetDate) {
                   timeMeta: logMeta,
                   accountName: accountName || "Unnamed Account",
                   phone: phone || "-",
-                  status: status || "Logged",
+                  status: status,
                   notes: logNote || lineStr,
                   row: i + 1
                 });
@@ -190,7 +204,7 @@ function getAllCallLogs(targetDate) {
                 timeMeta: formattedDate,
                 accountName: accountName || "Unnamed Account",
                 phone: phone || "-",
-                status: status || "Logged",
+                status: status,
                 notes: notesText,
                 row: i + 1
               });
@@ -205,7 +219,7 @@ function getAllCallLogs(targetDate) {
               timeMeta: formattedDate,
               accountName: accountName || "Unnamed Account",
               phone: phone || "-",
-              status: status || "Logged",
+              status: status,
               notes: "No notes recorded",
               row: i + 1
             });
@@ -371,26 +385,43 @@ function getCallTractionMetrics() {
 function getDailyCallBreakdown() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetsToScan = [SHEET_NAME, CLIENT_DIRECTORY_SHEET_NAME, CPM_MASTER_LIST_SHEET_NAME, HOME_HEALTH_SHEET_NAME, HOSPICE_SHEET_NAME];
+    const sheetsToScan = [
+      { name: SHEET_NAME, key: "records" },
+      { name: CLIENT_DIRECTORY_SHEET_NAME, key: "clientDirectory" },
+      { name: CPM_MASTER_LIST_SHEET_NAME, key: "cpm2024MasterList" },
+      { name: HOME_HEALTH_SHEET_NAME, key: "homeHealth" },
+      { name: HOSPICE_SHEET_NAME, key: "hospice" }
+    ];
 
     const dailyMap = {};
 
-    sheetsToScan.forEach(sheetName => {
-      const sheet = ss.getSheetByName(sheetName);
+    sheetsToScan.forEach(config => {
+      const sheet = ss.getSheetByName(config.name);
       if (!sheet || sheet.getLastRow() <= 1) return;
 
       const data = sheet.getDataRange().getValues();
       const headers = data[0].map(h => String(h).trim().toLowerCase());
 
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
-      const statusIdx = headers.findIndex(h => h.includes("status") || h.includes("outcome"));
+
+      let statusIdx = headers.indexOf("status");
+      if (statusIdx === -1) statusIdx = headers.indexOf("outcome");
+      if (statusIdx === -1) {
+        statusIdx = headers.findIndex(h => h === "status" || h === "outcome" || h === "call status" || h === "call outcome" || h === "lead status");
+      }
+      if (statusIdx === -1) {
+        statusIdx = headers.findIndex(h => (h.includes("status") || h.includes("outcome")) && !h.includes("supply") && !h.includes("billing"));
+      }
+
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
+
+      const defaultStatus = (config.key === "records" || config.key === "clientDirectory") ? DEFAULT_STATUS : "To Call";
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
-        let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "Logged").trim() : "Logged";
-        if (!statusVal) statusVal = "Logged";
+        let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
+        if (!statusVal) statusVal = defaultStatus;
 
         let formattedDate = "";
         if (rawDate instanceof Date) {
