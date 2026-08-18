@@ -125,7 +125,18 @@ function getAllCallLogs(targetDate) {
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
-      const statusIdx = headers.findIndex(h => h.includes("status") || h.includes("outcome"));
+      
+      let colIdx = -1;
+      if (config.name === CLIENT_DIRECTORY_SHEET_NAME) {
+        const sIdx = headers.indexOf("status");
+        const oIdx = headers.indexOf("outcome");
+        colIdx = sIdx >= 0 ? sIdx : (oIdx >= 0 ? oIdx : headers.findIndex(h => h.includes("status") || h.includes("outcome")));
+      } else {
+        const oIdx = headers.indexOf("outcome");
+        const sIdx = headers.indexOf("status");
+        colIdx = oIdx >= 0 ? oIdx : (sIdx >= 0 ? sIdx : headers.findIndex(h => h.includes("outcome") || h.includes("status")));
+      }
+
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
 
       for (let i = 1; i < data.length; i++) {
@@ -133,7 +144,13 @@ function getAllCallLogs(targetDate) {
 
         let accountName = nameIdx >= 0 ? String(row[nameIdx] || "").trim() : "";
         let phone = phoneIdx >= 0 ? String(row[phoneIdx] || "").trim() : "";
-        let status = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
+        let outcome = colIdx >= 0 ? String(row[colIdx] || "").trim() : "";
+        if (!outcome) {
+          outcome = (config.name === CLIENT_DIRECTORY_SHEET_NAME || config.name === SHEET_NAME) 
+            ? DEFAULT_STATUS 
+            : "To Call";
+        }
+
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
 
         let formattedDate = "";
@@ -172,7 +189,8 @@ function getAllCallLogs(targetDate) {
                   timeMeta: logMeta,
                   accountName: accountName || "Unnamed Account",
                   phone: phone || "-",
-                  status: status || "Logged",
+                  status: outcome,
+                  outcome: outcome,
                   notes: logNote || lineStr,
                   row: i + 1
                 });
@@ -188,7 +206,8 @@ function getAllCallLogs(targetDate) {
                 timeMeta: formattedDate,
                 accountName: accountName || "Unnamed Account",
                 phone: phone || "-",
-                status: status || "Logged",
+                status: outcome,
+                outcome: outcome,
                 notes: notesText,
                 row: i + 1
               });
@@ -202,7 +221,8 @@ function getAllCallLogs(targetDate) {
               timeMeta: formattedDate,
               accountName: accountName || "Unnamed Account",
               phone: phone || "-",
-              status: status || "Logged",
+              status: outcome,
+              outcome: outcome,
               notes: "No notes recorded",
               row: i + 1
             });
@@ -380,14 +400,27 @@ function getDailyCallBreakdown() {
       const headers = data[0].map(h => String(h).trim().toLowerCase());
 
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
-      const statusIdx = headers.findIndex(h => h.includes("status") || h.includes("outcome"));
+      
+      let statusIdx = -1;
+      if (sheetName === CLIENT_DIRECTORY_SHEET_NAME) {
+        const sIdx = headers.indexOf("status");
+        const oIdx = headers.indexOf("outcome");
+        statusIdx = sIdx >= 0 ? sIdx : (oIdx >= 0 ? oIdx : headers.findIndex(h => h.includes("status") || h.includes("outcome")));
+      } else {
+        const oIdx = headers.indexOf("outcome");
+        const sIdx = headers.indexOf("status");
+        statusIdx = oIdx >= 0 ? oIdx : (sIdx >= 0 ? sIdx : headers.findIndex(h => h.includes("outcome") || h.includes("status")));
+      }
+
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
-        let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "Logged").trim() : "Logged";
-        if (!statusVal) statusVal = "Logged";
+        let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
+        if (!statusVal) {
+          statusVal = (sheetName === CLIENT_DIRECTORY_SHEET_NAME || sheetName === SHEET_NAME) ? DEFAULT_STATUS : "To Call";
+        }
 
         let formattedDate = "";
         if (rawDate instanceof Date) {
