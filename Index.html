@@ -532,11 +532,12 @@
             <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200 sticky top-0 z-10 shadow-2xs">
               <tr>
                 <th class="p-3 w-[100px]">Call Date</th>
-                <th class="p-3 w-[130px]">Directory Source</th>
-                <th class="p-3 w-[170px]">Account Name</th>
-                <th class="p-3 w-[125px]">Phone Number</th>
-                <th class="p-3 w-[140px]">OUTCOME</th>
-                <th class="p-3 w-[260px] min-w-[220px]">Logged Note / Details</th>
+                <th class="p-3 w-[120px]">Directory Source</th>
+                <th class="p-3 w-[160px]">Account Name</th>
+                <th class="p-3 w-[115px]">Phone Number</th>
+                <th class="p-3 w-[130px]">OUTCOME</th>
+                <th class="p-3 w-[220px]">Logged Note / Details</th>
+                <th class="p-3 w-[60px] text-center">Action</th>
               </tr>
             </thead>
             <tbody id="callLogsTableBody" class="divide-y divide-slate-100"></tbody>
@@ -547,7 +548,7 @@
 
       <!-- Footer Actions -->
       <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0 text-xs">
-        <span class="text-[11px] text-slate-500 font-medium">Tip: Filter by specific dates using the calendar input above.</span>
+        <span class="text-[11px] text-slate-500 font-medium">Tip: Click any row or the Edit button to modify log context.</span>
         <button onclick="closeCallLogsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-lg transition cursor-pointer">
           Close View
         </button>
@@ -1397,7 +1398,8 @@
         if (item.accountName) uniqueAccounts.add(item.accountName.toLowerCase().trim());
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition duration-150";
+        tr.className = "hover:bg-indigo-50/50 transition duration-150 cursor-pointer";
+        tr.onclick = () => openEditFromCallLog(item.tabKey, item.row);
 
         const displayOutcome = item.outcome || item.status || 'To Call';
 
@@ -1406,25 +1408,51 @@
             <div>${item.callDate || '-'}</div>
             <div class="text-[9px] text-slate-400 font-normal">${item.timeMeta || ''}</div>
           </td>
-          <td class="p-3 font-semibold text-slate-600 truncate w-[130px]">
+          <td class="p-3 font-semibold text-slate-600 truncate w-[120px]">
             <span class="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
               ${item.source || 'General'}
             </span>
           </td>
-          <td class="p-3 font-bold text-slate-900 truncate w-[170px]">${item.accountName || '-'}</td>
-          <td class="p-3 font-mono text-slate-700 truncate w-[125px]">${item.phone || '-'}</td>
-          <td class="p-3 truncate w-[140px]">
+          <td class="p-3 font-bold text-slate-900 truncate w-[160px]">${item.accountName || '-'}</td>
+          <td class="p-3 font-mono text-slate-700 truncate w-[115px]">${item.phone || '-'}</td>
+          <td class="p-3 truncate w-[130px]">
             <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
               ${displayOutcome}
             </span>
           </td>
-          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[260px] min-w-[220px]">${item.notes || '-'}</td>
+          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[220px] min-w-[180px]">${item.notes || '-'}</td>
+          <td class="p-3 text-center w-[60px] shrink-0" onclick="event.stopPropagation();">
+            <button onclick="openEditFromCallLog('${item.tabKey}', ${item.row})" 
+                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded text-[10px] shadow-2xs transition cursor-pointer">
+              Edit
+            </button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
 
       document.getElementById('callLogMetricTotal').innerText = logs.length;
       document.getElementById('callLogMetricAccounts').innerText = uniqueAccounts.size;
+    }
+
+    function openEditFromCallLog(tabKey, rowNum) {
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res.error) {
+            displayStatusFeedbackNotification("Error opening record: " + res.error, 'error');
+            return;
+          }
+
+          if (tabKey === 'records') {
+            loadTargetRowDetailsToWorkspace(rowNum, null, 'edit');
+          } else {
+            editTabRecord(tabKey, rowNum);
+          }
+        })
+        .withFailureHandler(err => {
+          displayStatusFeedbackNotification("Failed to fetch row data: " + err.message, 'error');
+        })
+        .getCallLogDetails(tabKey, rowNum);
     }
 
     function filterCallLogsTable() {
