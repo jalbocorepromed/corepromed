@@ -2766,8 +2766,16 @@
           let itemDateStr = key;
           if (currentChartScope === 'week') {
             const parts = key.split('-W');
-            const simpleDate = new Date(parseInt(parts[0], 10), 0, 1 + (parseInt(parts[1], 10) - 1) * 7);
-            itemDateStr = simpleDate.toISOString().split('T')[0];
+            const year = parseInt(parts[0], 10);
+            const week = parseInt(parts[1], 10);
+            const simpleDate = new Date(year, 0, 1 + (week - 1) * 7);
+            const dow = simpleDate.getDay();
+            const ISOweekStart = simpleDate;
+            if (dow <= 4)
+                ISOweekStart.setDate(simpleDate.getDate() - simpleDate.getDay() + 1);
+            else
+                ISOweekStart.setDate(simpleDate.getDate() + 8 - simpleDate.getDay());
+            itemDateStr = ISOweekStart.toISOString().split('T')[0];
           } else if (currentChartScope === 'month') {
             itemDateStr = `${key}-01`; 
           } else if (currentChartScope === 'year') {
@@ -2811,7 +2819,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: { y: { beginAtZero: true } }
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }
       });
     }

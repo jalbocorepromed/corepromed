@@ -362,10 +362,14 @@ function getCallTractionMetrics() {
           const monthStr = `${year}-${String(month).padStart(2, '0')}`;
           monthlyCounts[monthStr] = (monthlyCounts[monthStr] || 0) + 1;
 
-          const firstDayOfYear = new Date(year, 0, 1);
-          const pastDaysOfYear = (dateObj - firstDayOfYear) / 86400000;
-          const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-          const weekStr = `${year}-W${String(weekNum).padStart(2, '0')}`;
+          // ISO-8601 Weekly Calculation Fix
+          const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+          const dayNum = d.getUTCDay() || 7;
+          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+          const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+          const weekStr = `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+
           weeklyCounts[weekStr] = (weeklyCounts[weekStr] || 0) + 1;
         };
 
