@@ -2919,15 +2919,20 @@
       const startDateVal = document.getElementById('metricsStartDate').value;
       const endDateVal = document.getElementById('metricsEndDate').value;
 
-      const metricsCounts = {
-        'To Call': 0,
-        'Call Follow-up': 0,
-        'Left Voicemail': 0,
-        'Declined': 0,
-        'Acct Demo': 0,
-        'In-Person': 0,
-        'Cost Comp': 0,
-        'Supply Audit': 0
+      const metricsCounts = {};
+      CALL_OUTCOMES.forEach(oc => metricsCounts[oc] = 0);
+
+      const countItemOutcome = (statusOrOutcome) => {
+        if (!statusOrOutcome) return;
+        if (statusOrOutcome === 'Potential Lead / Attempting Contact' || statusOrOutcome === 'To Call') {
+          metricsCounts['To Call']++;
+        } else if (statusOrOutcome === 'For Follow Up' || statusOrOutcome === 'Call Follow-up') {
+          metricsCounts['Call Follow-up']++;
+        } else if (statusOrOutcome === 'Routed to Voicemail' || statusOrOutcome === 'Left Voicemail') {
+          metricsCounts['Left Voicemail']++;
+        } else if (metricsCounts.hasOwnProperty(statusOrOutcome)) {
+          metricsCounts[statusOrOutcome]++;
+        }
       };
 
       masterCompaniesList.forEach(item => {
@@ -2935,28 +2940,17 @@
         if (startDateVal && itemDate < startDateVal) return;
         if (endDateVal && itemDate > endDateVal) return;
 
-        const status = item.currentStatus || DEFAULT_STATUS;
-        if (status === 'Potential Lead / Attempting Contact' || status === 'To Call') {
-          metricsCounts['To Call']++;
-        } else if (status === 'For Follow Up' || status === 'Call Follow-up') {
-          metricsCounts['Call Follow-up']++;
-        } else if (status === 'Routed to Voicemail' || status === 'Left Voicemail') {
-          metricsCounts['Left Voicemail']++;
-        } else if (metricsCounts.hasOwnProperty(status)) {
-          metricsCounts[status]++;
-        }
+        countItemOutcome(item.currentStatus || DEFAULT_STATUS);
       });
 
-      ['homeHealth', 'hospice', 'cpm2024MasterList'].forEach(tab => {
+      ['clientDirectory', 'homeHealth', 'hospice', 'cpm2024MasterList'].forEach(tab => {
         (tabDataStore[tab] || []).forEach(item => {
           const itemDate = item.callDate || item.dateLogged;
           if (startDateVal && itemDate < startDateVal) return;
           if (endDateVal && itemDate > endDateVal) return;
 
-          const outcome = item.outcome;
-          if (outcome && metricsCounts.hasOwnProperty(outcome)) {
-            metricsCounts[outcome]++;
-          }
+          const outcome = item.outcome || item.status;
+          countItemOutcome(outcome);
         });
       });
 
@@ -2968,7 +2962,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: 'Call Metrics Outcomes',
+            label: 'Call Outcomes',
             data: values,
             backgroundColor: ['#1A75BC', '#F59E0B', '#64748B', '#DC2626', '#8B5CF6', '#6366F1', '#0D9488', '#06B6D4'],
             borderRadius: 6

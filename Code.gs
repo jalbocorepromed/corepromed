@@ -175,12 +175,18 @@ function getAllCallLogs(targetDate) {
             const lineStr = line.trim();
             if (!lineStr) return;
 
-            const match = lineStr.match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|\s*([^\]]+)\]:\s*(.*)/);
+            const match = lineStr.match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]:\s*(.*)/);
             if (match) {
               parsedAnyLine = true;
               const logDate = match[1];
               const logMeta = match[2];
               const logNote = match[3];
+
+              let matchedOutcome = outcome;
+              const outcomeExtract = logMeta.match(/Outcome:\s*([^\|]+)/i);
+              if (outcomeExtract) {
+                matchedOutcome = outcomeExtract[1].trim();
+              }
 
               if (!targetDate || targetDate === logDate) {
                 logs.push({
@@ -190,8 +196,8 @@ function getAllCallLogs(targetDate) {
                   timeMeta: logMeta,
                   accountName: accountName || "Unnamed Account",
                   phone: phone || "-",
-                  status: outcome,
-                  outcome: outcome,
+                  status: matchedOutcome,
+                  outcome: matchedOutcome,
                   notes: logNote || lineStr,
                   row: i + 1
                 });
@@ -461,14 +467,16 @@ function getDailyCallBreakdown() {
 
         if (notesIdx >= 0 && row[notesIdx]) {
           const notesText = String(row[notesIdx]);
-          const logRegex = /\[(?:Call Date:\s*(\d{4}-\d{2}-\d{2})|(\d{2})\/(\d{2})\/(\d{4}))/g;
+          const logRegex = /\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]/g;
           let match;
           while ((match = logRegex.exec(notesText)) !== null) {
-            let logDate = "";
-            if (match[1]) {
-              logDate = match[1];
-            } else {
-              logDate = `${match[4]}-${String(match[2]).padStart(2, '0')}-${String(match[3]).padStart(2, '0')}`;
+            const logDate = match[1];
+            const logMeta = match[2] || "";
+
+            let matchedOutcome = statusVal;
+            const outcomeExtract = logMeta.match(/Outcome:\s*([^\|]+)/i);
+            if (outcomeExtract) {
+              matchedOutcome = outcomeExtract[1].trim();
             }
 
             if (logDate && logDate !== formattedDate) {
@@ -476,7 +484,7 @@ function getDailyCallBreakdown() {
                 dailyMap[logDate] = { totalCalls: 0, statuses: {} };
               }
               dailyMap[logDate].totalCalls += 1;
-              dailyMap[logDate].statuses[statusVal] = (dailyMap[logDate].statuses[statusVal] || 0) + 1;
+              dailyMap[logDate].statuses[matchedOutcome] = (dailyMap[logDate].statuses[matchedOutcome] || 0) + 1;
             }
           }
         }
@@ -691,11 +699,12 @@ function saveTabCallRecord(data) {
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
     const callDateFormatted = data.callDate || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     const currentUser = data.user || getActiveCRMUser();
-    const formattedNotes = data.notes ? `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.notes.trim()}` : "";
-
+    
     const statusOrOutcomeVal = (data.tab === "clientDirectory") 
       ? (data.status || DEFAULT_STATUS) 
       : (data.outcome || "To Call");
+
+    const formattedNotes = data.notes ? `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser} | Outcome: ${statusOrOutcomeVal}]: ${data.notes.trim()}` : "";
 
     const rawHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim().toLowerCase());
 
@@ -805,7 +814,7 @@ function updateTabCallRecord(data) {
     updateCol(statusColName.toLowerCase(), statusOrOutcomeVal);
 
     if (data.notes && data.notes.trim() !== "") {
-      const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.notes.trim()}`;
+      const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser} | Outcome: ${statusOrOutcomeVal}]: ${data.notes.trim()}`;
       
       let noteUpdated = false;
       rawHeaders.forEach((h, idx) => {
@@ -958,6 +967,7 @@ function addNewLeadFromSidebar(data) {
   const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
   const callDateFormatted = data.callDate || data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   const currentUser = data.user || getActiveCRMUser();
+  const currentStatusVal = data.status || DEFAULT_STATUS;
 
   if (dateCol >= 0 && callDateFormatted) {
     const parts = callDateFormatted.split('-');
@@ -974,7 +984,7 @@ function addNewLeadFromSidebar(data) {
   if (addressCol >= 0) newRowData[addressCol] = data.address || "";
   if (emailCol >= 0) newRowData[emailCol] = data.email || "";
   if (phoneCol >= 0) newRowData[phoneCol] = data.phone || "";
-  if (statusCol >= 0) newRowData[statusCol] = data.status || DEFAULT_STATUS;
+  if (statusCol >= 0) newRowData[statusCol] = currentStatusVal;
 
   if (corporateCol >= 0) newRowData[corporateCol] = data.corporate || "";
   if (leadGeneratorCol >= 0) newRowData[leadGeneratorCol] = data.leadGenerator || "";
@@ -993,7 +1003,7 @@ function addNewLeadFromSidebar(data) {
   if (zipCol >= 0) newRowData[zipCol] = data.zip || "";
 
   if (data.note && data.note.trim() !== "") {
-    const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.note.trim()}`;
+    const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser} | Outcome: ${currentStatusVal}]: ${data.note.trim()}`;
     if (recentNotesCol >= 0) newRowData[recentNotesCol] = formattedNote;
     if (historyCol >= 0) newRowData[historyCol] = formattedNote;
     if (callCountCol >= 0) newRowData[callCountCol] = 1;
@@ -1008,7 +1018,7 @@ function addNewLeadFromSidebar(data) {
   if (statusCol >= 0) {
     const rule = SpreadsheetApp.newDataValidation().requireValueInList(STATUSES, true).setAllowInvalid(false).build();
     sheet.getRange(newRowNum, statusCol + 1).setDataValidation(rule);
-    colorCodeRow(sheet, newRowNum, data.status || DEFAULT_STATUS);
+    colorCodeRow(sheet, newRowNum, currentStatusVal);
   }
 
   return { message: "Company added successfully!", rowNumber: newRowNum };
@@ -1055,6 +1065,7 @@ function updateLeadFromSidebar(data) {
   const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
   const callDateFormatted = data.callDate || data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   const currentUser = data.user || getActiveCRMUser();
+  const currentStatusVal = data.status || DEFAULT_STATUS;
 
   if (dateCol > 0 && callDateFormatted) {
     const parts = callDateFormatted.split('-');
@@ -1093,7 +1104,7 @@ function updateLeadFromSidebar(data) {
   }
 
   if (data.note && data.note.trim() !== "") {
-    const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser}]: ${data.note.trim()}`;
+    const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser} | Outcome: ${currentStatusVal}]: ${data.note.trim()}`;
     if (lastCalledCol > 0) sheet.getRange(row, lastCalledCol).setValue(new Date());
     if (callCountCol > 0) {
       const currentCountCell = sheet.getRange(row, callCountCol);
