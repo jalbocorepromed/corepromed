@@ -2389,7 +2389,6 @@
       document.getElementById('tabCallPhone').value = record.phone || '';
       document.getElementById('tabCallOutcomes').value = (tabKey === 'clientDirectory') ? (record.status || DEFAULT_STATUS) : (record.outcome || 'To Call');
       
-      // Separate existing notes from new note entry to prevent note duplication
       document.getElementById('tabCallExistingNotes').innerText = record.notes || 'No notes recorded yet.';
       document.getElementById('tabCallNotes').value = '';
 

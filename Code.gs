@@ -651,11 +651,15 @@ function getTabData(tabKey) {
       const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || "";
       const notesVal = recordData["Notes"] || recordData["notes"] || recordData["Recent Call Notes"] || recordData["Call History Log"] || recordData["History Log"] || "";
 
+      // Dynamic case-insensitive Tier lookup
+      const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
+      const tierVal = tierKey ? recordData[tierKey] : "";
+
       records.push({
         row: i + 1,
         dateLogged: dateLoggedVal,
         accountName: recordData["Account Name"] || recordData["account name"] || recordData["Company Name"] || recordData["company name"] || recordData["Company"] || "",
-        tier: recordData["Tier"] || recordData["tier"] || "",
+        tier: tierVal,
         address: recordData["Address"] || recordData["address"] || "",
         city: recordData["City"] || recordData["city"] || "",
         state: recordData["State"] || recordData["state"] || "",
