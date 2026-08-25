@@ -548,7 +548,7 @@
 
       <!-- Footer Actions -->
       <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0 text-xs">
-        <span class="text-[11px] text-slate-500 font-medium">Tip: Click any row or the Edit button to modify log context.</span>
+        <span class="text-[11px] text-slate-500 font-medium">Tip: Click the Edit button to modify log context.</span>
         <button onclick="closeCallLogsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-lg transition cursor-pointer">
           Close View
         </button>
@@ -1398,8 +1398,7 @@
         if (item.accountName) uniqueAccounts.add(item.accountName.toLowerCase().trim());
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-indigo-50/50 transition duration-150 cursor-pointer";
-        tr.onclick = () => openEditFromCallLog(item.tabKey, item.row);
+        tr.className = "hover:bg-indigo-50/50 transition duration-150";
 
         const displayOutcome = item.outcome || item.status || 'To Call';
 
@@ -1413,7 +1412,7 @@
               ${item.source || 'General'}
             </span>
           </td>
-          <td class="p-3 font-bold text-slate-900 truncate w-[160px]">${item.accountName || '-'}</td>
+          <td class="p-3 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate w-[160px]" onclick="openEditFromCallLog('${item.tabKey}', ${item.row})">${item.accountName || '-'}</td>
           <td class="p-3 font-mono text-slate-700 truncate w-[115px]">${item.phone || '-'}</td>
           <td class="p-3 truncate w-[130px]">
             <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
@@ -1421,7 +1420,7 @@
             </span>
           </td>
           <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[220px] min-w-[180px]">${item.notes || '-'}</td>
-          <td class="p-3 text-center w-[60px] shrink-0" onclick="event.stopPropagation();">
+          <td class="p-3 text-center w-[60px] shrink-0">
             <button onclick="openEditFromCallLog('${item.tabKey}', ${item.row})" 
                     class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded text-[10px] shadow-2xs transition cursor-pointer">
               Edit
@@ -1709,8 +1708,7 @@
 
       filtered.forEach(rec => {
         const row = document.createElement('div');
-        row.className = "p-2.5 hover:bg-amber-50/60 transition cursor-pointer flex items-center justify-between gap-3";
-        row.onclick = () => selectRecordForModalEdit(rec);
+        row.className = "p-2.5 hover:bg-amber-50/60 transition flex items-center justify-between gap-3";
 
         const locationStr = [rec.city, rec.state, rec.county, rec.zip].filter(Boolean).join(', ');
         const badgeVal = (editModalActiveTab === 'clientDirectory') ? (rec.status || DEFAULT_STATUS) : (rec.outcome || 'To Call');
@@ -1718,7 +1716,7 @@
         row.innerHTML = `
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-900 text-xs truncate">${rec.accountName || 'Unnamed Record'}</span>
+              <span class="font-bold text-[#1A75BC] hover:underline cursor-pointer text-xs truncate" onclick="selectRecordForModalEdit(${JSON.stringify(rec).replace(/"/g, '&quot;')})">${rec.accountName || 'Unnamed Record'}</span>
               ${rec.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${rec.tier}</span>` : ''}
             </div>
             <div class="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -1729,7 +1727,7 @@
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(badgeVal)}">${badgeVal}</span>
-            <button type="button" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] px-2.5 py-1 rounded transition cursor-pointer">
+            <button type="button" onclick='selectRecordForModalEdit(${JSON.stringify(rec).replace(/"/g, '&quot;')})' class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] px-2.5 py-1 rounded transition cursor-pointer">
               Edit
             </button>
           </div>
@@ -2318,8 +2316,7 @@
 
       filtered.forEach(record => {
         const rowElem = document.createElement('div');
-        rowElem.className = "border-b border-slate-100 hover:bg-slate-50 transition duration-150 flex items-center p-2.5 cursor-pointer min-w-max";
-        rowElem.onclick = () => showAccountDetailModal(record, tabKey);
+        rowElem.className = "border-b border-slate-100 hover:bg-slate-50 transition duration-150 flex items-center p-2.5 min-w-max";
 
         visibleCols.forEach(colName => {
           const style = getColumnStyle(colName);
@@ -2327,8 +2324,16 @@
           colCell.className = style.cellClass;
           const cellVal = (record._dataMap && record._dataMap[colName] !== undefined) ? record._dataMap[colName] : "-";
 
-          if (colName.toLowerCase() === "status" || colName.toLowerCase() === "outcome") {
+          const lowerColName = colName.toLowerCase().trim();
+
+          if (lowerColName === "status" || lowerColName === "outcome") {
             colCell.innerHTML = `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(cellVal)}">${cellVal || '-'}</span>`;
+          } else if (lowerColName.includes("account") || lowerColName.includes("company") || lowerColName.includes("name")) {
+            colCell.innerHTML = `<span class="hover:underline text-[#1A75BC] cursor-pointer">${cellVal || '-'}</span>`;
+            colCell.onclick = (e) => {
+              e.stopPropagation();
+              showAccountDetailModal(record, tabKey);
+            };
           } else {
             colCell.innerText = cellVal || '-';
           }
@@ -3024,7 +3029,7 @@
       itemsToRender.forEach(companyRowItem => {
         const tableRowElement = document.createElement('div');
         tableRowElement.id = `row-item-${companyRowItem.row}`;
-        tableRowElement.className = "pipeline-search-node border-b border-slate-100 hover:bg-slate-50 transition duration-150 flex items-center p-2.5 cursor-pointer";
+        tableRowElement.className = "pipeline-search-node border-b border-slate-100 hover:bg-slate-50 transition duration-150 flex items-center p-2.5";
 
         const street = companyRowItem.address || '';
         const city = companyRowItem.city || '';
@@ -3041,16 +3046,11 @@
 
         tableRowElement.setAttribute('data-search-index', `${companyRowItem.callDate || companyRowItem.date || ''} ${companyRowItem.company} ${companyRowItem.dba || ''} ${companyRowItem.corporate || ''} ${companyRowItem.leadGenerator || ''} ${companyRowItem.accountOwner || ''} ${companyRowItem.facilityType} ${companyRowItem.phone} ${companyRowItem.currentStatus} ${companyRowItem.email} ${fullAddress}`.toLowerCase());
 
-        tableRowElement.addEventListener('click', (e) => {
-          if (window.getSelection().toString().length > 0) return;
-          if (!e.target.closest('.action-btn')) {
-            loadTargetRowDetailsToWorkspace(companyRowItem.row, tableRowElement, 'view');
-          }
-        });
-
         tableRowElement.innerHTML = `
           <div class="w-[90px] shrink-0 pl-2 font-medium text-slate-500 font-mono truncate">${companyRowItem.callDate || companyRowItem.date || '-'}</div>
-          <div class="w-[160px] shrink-0 min-w-0 font-bold text-slate-900 truncate">${companyRowItem.company || 'Untitled Account Profile'}</div>
+          <div class="w-[160px] shrink-0 min-w-0 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate" onclick="loadTargetRowDetailsToWorkspace(${companyRowItem.row}, document.getElementById('row-item-${companyRowItem.row}'), 'view')">
+            ${companyRowItem.company || 'Untitled Account Profile'}
+          </div>
           <div class="w-[110px] shrink-0 min-w-0 font-medium text-slate-700 truncate">${companyRowItem.facilityType || '-'}</div>
           <div class="w-[160px] shrink-0 min-w-0 text-slate-500 truncate" title="${fullAddress}">${fullAddress}</div>
           <div class="w-[150px] shrink-0 min-w-0 text-[#1A75BC] font-medium truncate">${companyRowItem.email || '-'}</div>

@@ -362,7 +362,6 @@ function getCallTractionMetrics() {
           const monthStr = `${year}-${String(month).padStart(2, '0')}`;
           monthlyCounts[monthStr] = (monthlyCounts[monthStr] || 0) + 1;
 
-          // ISO-8601 Weekly Calculation Fix
           const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
           const dayNum = d.getUTCDay() || 7;
           d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -721,7 +720,6 @@ function saveTabCallRecord(data) {
       setColVal("email address", data.email || "");
       setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
 
-      // Dynamically match any note/history column headers
       rawHeaders.forEach((h, idx) => {
         if (h.includes("note") || h.includes("history")) {
           rowArr[idx] = formattedNotes;
