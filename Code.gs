@@ -27,6 +27,7 @@ const FACILITY_TYPE_COLUMN_NAME = "Facility Type";
 const ADDRESS_COLUMN_NAME = "Address"; 
 const EMAIL_COLUMN_NAME = "Email Address";
 const PHONE_COLUMN_NAME = "Phone Number";
+const TIER_COLUMN_NAME = "Tier";
 
 // FIELD CONSTANTS FROM SPREADSHEET ROW
 const CORPORATE_COLUMN_NAME = "Corporate";
@@ -125,6 +126,7 @@ function getAllCallLogs(targetDate) {
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
+      const tierIdx = headers.findIndex(h => h.includes("tier"));
       
       let colIdx = -1;
       if (config.name === CLIENT_DIRECTORY_SHEET_NAME) {
@@ -144,6 +146,7 @@ function getAllCallLogs(targetDate) {
 
         let accountName = nameIdx >= 0 ? String(row[nameIdx] || "").trim() : "";
         let phone = phoneIdx >= 0 ? String(row[phoneIdx] || "").trim() : "";
+        let tier = tierIdx >= 0 ? String(row[tierIdx] || "").trim() : "";
         let outcome = colIdx >= 0 ? String(row[colIdx] || "").trim() : "";
         if (!outcome) {
           outcome = (config.name === CLIENT_DIRECTORY_SHEET_NAME || config.name === SHEET_NAME) 
@@ -195,6 +198,7 @@ function getAllCallLogs(targetDate) {
                   callDate: logDate,
                   timeMeta: logMeta,
                   accountName: accountName || "Unnamed Account",
+                  tier: tier,
                   phone: phone || "-",
                   status: matchedOutcome,
                   outcome: matchedOutcome,
@@ -213,6 +217,7 @@ function getAllCallLogs(targetDate) {
                 callDate: formattedDate,
                 timeMeta: formattedDate,
                 accountName: accountName || "Unnamed Account",
+                tier: tier,
                 phone: phone || "-",
                 status: outcome,
                 outcome: outcome,
@@ -229,6 +234,7 @@ function getAllCallLogs(targetDate) {
               callDate: formattedDate,
               timeMeta: formattedDate,
               accountName: accountName || "Unnamed Account",
+              tier: tier,
               phone: phone || "-",
               status: outcome,
               outcome: outcome,
@@ -525,6 +531,7 @@ function getAllCompaniesData() {
     const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase());
     const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase());
     const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase());
+    const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase());
 
     const corporateCol = headers.indexOf(CORPORATE_COLUMN_NAME.toLowerCase());
     const leadGeneratorCol = headers.indexOf(LEAD_GENERATOR_COLUMN_NAME.toLowerCase());
@@ -566,6 +573,7 @@ function getAllCompaniesData() {
         company: (companyCol >= 0 && companyCol < rowArr.length) ? String(rowArr[companyCol]).trim() : "",
         dba: (dbaCol >= 0 && dbaCol < rowArr.length) ? String(rowArr[dbaCol]).trim() : "", 
         facilityType: (facilityTypeCol >= 0 && facilityTypeCol < rowArr.length) ? String(rowArr[facilityTypeCol]).trim() : "",
+        tier: (tierCol >= 0 && tierCol < rowArr.length) ? String(rowArr[tierCol]).trim() : "",
         address: (addressCol >= 0 && addressCol < rowArr.length) ? String(rowArr[addressCol]).trim() : "",
         email: (emailCol >= 0 && emailCol < rowArr.length) ? String(rowArr[emailCol]).trim() : "",
         phone: (phoneCol >= 0 && phoneCol < rowArr.length) ? String(rowArr[phoneCol]).trim() : "",
@@ -856,6 +864,7 @@ function getRowDataByNumber(row) {
     const companyCol = headers.indexOf(COMPANY_COLUMN_NAME.toLowerCase()) + 1;
     const dbaCol = headers.indexOf(DBA_COLUMN_NAME.toLowerCase()) + 1; 
     const facilityTypeCol = headers.indexOf(FACILITY_TYPE_COLUMN_NAME.toLowerCase()) + 1;
+    const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase()) + 1;
     const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase()) + 1;
     const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase()) + 1;
     const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase()) + 1;
@@ -899,6 +908,7 @@ function getRowDataByNumber(row) {
       company: companyCol > 0 ? String(sheet.getRange(row, companyCol).getValue()).trim() : "",
       dba: dbaCol > 0 ? String(sheet.getRange(row, dbaCol).getValue()).trim() : "", 
       facilityType: facilityTypeCol > 0 ? String(sheet.getRange(row, facilityTypeCol).getValue()).trim() : "",
+      tier: tierCol > 0 ? String(sheet.getRange(row, tierCol).getValue()).trim() : "",
       address: addressCol > 0 ? String(sheet.getRange(row, addressCol).getValue()).trim() : "",
       email: emailCol > 0 ? String(sheet.getRange(row, emailCol).getValue()).trim() : "",
       phone: phoneCol > 0 ? String(sheet.getRange(row, phoneCol).getValue()).trim() : "",
@@ -943,6 +953,7 @@ function addNewLeadFromSidebar(data) {
   const companyCol = headers.indexOf(COMPANY_COLUMN_NAME.toLowerCase());
   const dbaCol = headers.indexOf(DBA_COLUMN_NAME.toLowerCase()); 
   const facilityTypeCol = headers.indexOf(FACILITY_TYPE_COLUMN_NAME.toLowerCase());
+  const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase());
   const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase());
   const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase());
   const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase());
@@ -985,6 +996,7 @@ function addNewLeadFromSidebar(data) {
   if (companyCol >= 0) newRowData[companyCol] = data.company || "";
   if (dbaCol >= 0) newRowData[dbaCol] = data.dba || ""; 
   if (facilityTypeCol >= 0) newRowData[facilityTypeCol] = data.facilityType || "";
+  if (tierCol >= 0) newRowData[tierCol] = data.tier || "";
   if (addressCol >= 0) newRowData[addressCol] = data.address || "";
   if (emailCol >= 0) newRowData[emailCol] = data.email || "";
   if (phoneCol >= 0) newRowData[phoneCol] = data.phone || "";
@@ -1040,6 +1052,7 @@ function updateLeadFromSidebar(data) {
   const companyCol = headers.indexOf(COMPANY_COLUMN_NAME.toLowerCase()) + 1;
   const dbaCol = headers.indexOf(DBA_COLUMN_NAME.toLowerCase()) + 1; 
   const facilityTypeCol = headers.indexOf(FACILITY_TYPE_COLUMN_NAME.toLowerCase()) + 1;
+  const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase()) + 1;
   const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase()) + 1;
   const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase()) + 1;
   const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase()) + 1;
@@ -1080,6 +1093,7 @@ function updateLeadFromSidebar(data) {
   if (companyCol > 0) sheet.getRange(row, companyCol).setValue(data.company || "");
   if (dbaCol > 0) sheet.getRange(row, dbaCol).setValue(data.dba || ""); 
   if (facilityTypeCol > 0) sheet.getRange(row, facilityTypeCol).setValue(data.facilityType || "");
+  if (tierCol > 0) sheet.getRange(row, tierCol).setValue(data.tier || "");
   if (addressCol > 0) sheet.getRange(row, addressCol).setValue(data.address || "");
   if (emailCol > 0) sheet.getRange(row, emailCol).setValue(data.email || "");
   if (phoneCol > 0) sheet.getRange(row, phoneCol).setValue(data.phone || "");
@@ -1200,6 +1214,7 @@ function setupCRM() {
       COMPANY_COLUMN_NAME, 
       DBA_COLUMN_NAME, 
       FACILITY_TYPE_COLUMN_NAME,
+      TIER_COLUMN_NAME,
       CONTACT_NAME_COLUMN_NAME,
       CONTACT_TITLE_COLUMN_NAME,
       CONTACT_EMAIL_COLUMN_NAME,
