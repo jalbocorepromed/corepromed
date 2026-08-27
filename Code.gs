@@ -264,7 +264,7 @@ function getAllCallLogs(targetDate, targetUser) {
           });
 
           if (!parsedAnyLine && formattedDate) {
-            if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL")) {
+            if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL" || "system/admin".includes(targetUser.toLowerCase()))) {
               logs.push({
                 source: config.label,
                 tabKey: config.key,
@@ -282,7 +282,7 @@ function getAllCallLogs(targetDate, targetUser) {
             }
           }
         } else if (formattedDate) {
-          if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL")) {
+          if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL" || "system/admin".includes(targetUser.toLowerCase()))) {
             logs.push({
               source: config.label,
               tabKey: config.key,
@@ -473,7 +473,7 @@ function getCallTractionMetrics() {
 }
 
 /**
- * Fetches daily call breakdown supporting optional user filter.
+ * FIXED: Fetches daily call breakdown with complete user filter matching.
  */
 function getDailyCallBreakdown(targetUser) {
   try {
@@ -506,47 +506,67 @@ function getDailyCallBreakdown(targetUser) {
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
-        let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
-        if (!statusVal) {
-          statusVal = (sheetName === CLIENT_DIRECTORY_SHEET_NAME || sheetName === SHEET_NAME) ? DEFAULT_STATUS : "To Call";
+        let defaultStatusVal = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
+        if (!defaultStatusVal) {
+          defaultStatusVal = (sheetName === CLIENT_DIRECTORY_SHEET_NAME || sheetName === SHEET_NAME) ? DEFAULT_STATUS : "To Call";
         }
 
-        if (notesIdx >= 0 && row[notesIdx]) {
-          const notesText = String(row[notesIdx]);
+        let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
+        let baseDateStr = "";
+        if (rawDate instanceof Date) {
+          baseDateStr = Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
+        } else if (rawDate) {
+          const parsed = new Date(rawDate);
+          if (!isNaN(parsed.getTime())) {
+            baseDateStr = Utilities.formatDate(parsed, Session.getScriptTimeZone(), "yyyy-MM-dd");
+          }
+        }
+
+        let notesText = notesIdx >= 0 ? String(row[notesIdx] || "").trim() : "";
+        let loggedNoteEntries = [];
+
+        if (notesText) {
           const logRegex = /\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]/g;
           let match;
           while ((match = logRegex.exec(notesText)) !== null) {
             const logDate = match[1];
             const logMeta = match[2] || "";
 
-            let logUser = "";
+            let logUser = "System/Admin";
             const userExtract = logMeta.match(/-\s*([^\|]+)/);
             if (userExtract) {
               logUser = userExtract[1].trim();
             }
 
-            if (targetUser && targetUser !== "ALL" && logUser.toLowerCase() !== targetUser.toLowerCase()) {
-              continue;
-            }
-
-            let matchedOutcome = statusVal;
+            let matchedOutcome = defaultStatusVal;
             const outcomeExtract = logMeta.match(/Outcome:\s*([^\|]+)/i);
             if (outcomeExtract) {
               matchedOutcome = outcomeExtract[1].trim();
             }
 
-            if (logDate) {
-              if (!dailyMap[logDate]) {
-                dailyMap[logDate] = { totalCalls: 0, statuses: {}, users: {} };
-              }
-              dailyMap[logDate].totalCalls += 1;
-              dailyMap[logDate].statuses[matchedOutcome] = (dailyMap[logDate].statuses[matchedOutcome] || 0) + 1;
-              if (logUser) {
-                dailyMap[logDate].users[logUser] = (dailyMap[logDate].users[logUser] || 0) + 1;
-              }
-            }
+            loggedNoteEntries.push({ date: logDate, user: logUser, outcome: matchedOutcome });
           }
         }
+
+        // If no parsed inline call notes exist, fall back to base row date
+        if (loggedNoteEntries.length === 0 && baseDateStr) {
+          loggedNoteEntries.push({ date: baseDateStr, user: "System/Admin", outcome: defaultStatusVal });
+        }
+
+        loggedNoteEntries.forEach(entry => {
+          if (targetUser && targetUser !== "ALL" && entry.user.toLowerCase() !== targetUser.toLowerCase()) {
+            return;
+          }
+
+          if (entry.date) {
+            if (!dailyMap[entry.date]) {
+              dailyMap[entry.date] = { totalCalls: 0, statuses: {}, users: {} };
+            }
+            dailyMap[entry.date].totalCalls += 1;
+            dailyMap[entry.date].statuses[entry.outcome] = (dailyMap[entry.date].statuses[entry.outcome] || 0) + 1;
+            dailyMap[entry.date].users[entry.user] = (dailyMap[entry.date].users[entry.user] || 0) + 1;
+          }
+        });
       }
     });
 
