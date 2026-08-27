@@ -166,6 +166,7 @@
               <div class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold sticky top-0 z-10 shadow-2xs flex items-center p-2.5">
                 <div class="w-[90px] shrink-0 pl-2">Call Date</div>
                 <div class="w-[160px] shrink-0">Company Name</div>
+                <div class="w-[70px] shrink-0">Tier</div>
                 <div class="w-[110px] shrink-0">Facility Type</div>
                 <div class="w-[160px] shrink-0">Address</div>
                 <div class="w-[150px] shrink-0">Email Address</div>
@@ -493,7 +494,7 @@
         </div>
 
         <div class="flex items-center space-x-2 flex-1 min-w-[220px] max-w-sm">
-          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, status, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
+          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, tier, status, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
         </div>
 
       </div>
@@ -534,6 +535,7 @@
                 <th class="p-3 w-[100px]">Call Date</th>
                 <th class="p-3 w-[120px]">Directory Source</th>
                 <th class="p-3 w-[160px]">Account Name</th>
+                <th class="p-3 w-[70px]">Tier</th>
                 <th class="p-3 w-[115px]">Phone Number</th>
                 <th class="p-3 w-[130px]">OUTCOME</th>
                 <th class="p-3 w-[220px]">Logged Note / Details</th>
@@ -843,15 +845,27 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="col-span-2">
             <label class="block font-medium text-slate-600 mb-1">Company Name</label>
             <input type="text" id="entryCompany" required placeholder="Enter company name..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
           </div>
           <div>
-            <label class="block font-medium text-slate-600 mb-1">DBA (Doing Business As)</label>
-            <input type="text" id="entryDba" placeholder="Enter DBA name..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+            <label class="block font-medium text-slate-600 mb-1">Tier</label>
+            <select id="entryTier" class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none bg-white text-slate-800 font-medium shadow-2xs cursor-pointer">
+              <option value="">-- Tier --</option>
+              <option value="NO TIER">NO TIER</option>
+              <option value="Tier 1">Tier 1</option>
+              <option value="Tier 2">Tier 2</option>
+              <option value="Tier 3">Tier 3</option>
+              <option value="Tier 4">Tier 4</option>
+            </select>
           </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">DBA (Doing Business As)</label>
+          <input type="text" id="entryDba" placeholder="Enter DBA name..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
         </div>
 
         <div class="grid grid-cols-3 gap-2">
@@ -1413,6 +1427,9 @@
             </span>
           </td>
           <td class="p-3 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate w-[160px]" onclick="openEditFromCallLog('${item.tabKey}', ${item.row})">${item.accountName || '-'}</td>
+          <td class="p-3 truncate w-[70px]">
+            ${item.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${item.tier}</span>` : '-'}
+          </td>
           <td class="p-3 font-mono text-slate-700 truncate w-[115px]">${item.phone || '-'}</td>
           <td class="p-3 truncate w-[130px]">
             <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
@@ -1463,6 +1480,7 @@
 
       const filtered = currentCallLogsMaster.filter(item => {
         return (item.accountName || '').toLowerCase().includes(q) ||
+               (item.tier || '').toLowerCase().includes(q) ||
                (item.phone || '').toLowerCase().includes(q) ||
                (item.outcome || item.status || '').toLowerCase().includes(q) ||
                (item.source || '').toLowerCase().includes(q) ||
@@ -3063,12 +3081,15 @@
         }
         if (!fullAddress) fullAddress = '-';
 
-        tableRowElement.setAttribute('data-search-index', `${companyRowItem.callDate || companyRowItem.date || ''} ${companyRowItem.company} ${companyRowItem.dba || ''} ${companyRowItem.corporate || ''} ${companyRowItem.leadGenerator || ''} ${companyRowItem.accountOwner || ''} ${companyRowItem.facilityType} ${companyRowItem.phone} ${companyRowItem.currentStatus} ${companyRowItem.email} ${fullAddress}`.toLowerCase());
+        tableRowElement.setAttribute('data-search-index', `${companyRowItem.callDate || companyRowItem.date || ''} ${companyRowItem.company} ${companyRowItem.tier || ''} ${companyRowItem.dba || ''} ${companyRowItem.corporate || ''} ${companyRowItem.leadGenerator || ''} ${companyRowItem.accountOwner || ''} ${companyRowItem.facilityType} ${companyRowItem.phone} ${companyRowItem.currentStatus} ${companyRowItem.email} ${fullAddress}`.toLowerCase());
 
         tableRowElement.innerHTML = `
           <div class="w-[90px] shrink-0 pl-2 font-medium text-slate-500 font-mono truncate">${companyRowItem.callDate || companyRowItem.date || '-'}</div>
           <div class="w-[160px] shrink-0 min-w-0 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate" onclick="loadTargetRowDetailsToWorkspace(${companyRowItem.row}, document.getElementById('row-item-${companyRowItem.row}'), 'view')">
             ${companyRowItem.company || 'Untitled Account Profile'}
+          </div>
+          <div class="w-[70px] shrink-0 font-medium truncate">
+            ${companyRowItem.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${companyRowItem.tier}</span>` : '-'}
           </div>
           <div class="w-[110px] shrink-0 min-w-0 font-medium text-slate-700 truncate">${companyRowItem.facilityType || '-'}</div>
           <div class="w-[160px] shrink-0 min-w-0 text-slate-500 truncate" title="${fullAddress}">${fullAddress}</div>
@@ -3126,6 +3147,7 @@
           document.getElementById('entryDate').value = res.callDate || res.date || new Date().toISOString().split('T')[0];
           document.getElementById('entryStatus').value = res.currentStatus || DEFAULT_STATUS;
           document.getElementById('entryCompany').value = res.company || "";
+          document.getElementById('entryTier').value = res.tier || "";
           document.getElementById('entryDba').value = res.dba || ""; 
           document.getElementById('entryFacilityType').value = res.facilityType || "";
           document.getElementById('entryPhone').value = res.phone || "";
@@ -3189,6 +3211,7 @@
       document.getElementById('entryRowNoId').value = "";
       document.getElementById('crmCaptureForm').reset();
       document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('entryTier').value = "";
       document.getElementById('entryDba').value = ""; 
       document.getElementById('entryLeadGenerator').value = "";
       document.getElementById('entryAccountOwner').value = ""; 
@@ -3212,6 +3235,7 @@
         callDate: document.getElementById('entryDate').value,
         status: document.getElementById('entryStatus').value,
         company: document.getElementById('entryCompany').value,
+        tier: document.getElementById('entryTier').value,
         dba: document.getElementById('entryDba').value, 
         facilityType: document.getElementById('entryFacilityType').value,
         phone: document.getElementById('entryPhone').value,

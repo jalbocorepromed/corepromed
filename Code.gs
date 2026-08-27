@@ -101,7 +101,51 @@ function getCurrentUserInfo() {
   };
 }
 
-function getAllCallLogs(targetDate) {
+/**
+ * Fetches all unique users who have logged calls across sheets.
+ */
+function getAllCRMUsers() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheetsToScan = [SHEET_NAME, CLIENT_DIRECTORY_SHEET_NAME, CPM_MASTER_LIST_SHEET_NAME, HOME_HEALTH_SHEET_NAME, HOSPICE_SHEET_NAME];
+    const usersSet = new Set();
+
+    sheetsToScan.forEach(sheetName => {
+      const sheet = ss.getSheetByName(sheetName);
+      if (!sheet || sheet.getLastRow() <= 1) return;
+
+      const data = sheet.getDataRange().getValues();
+      const headers = data[0].map(h => String(h).trim().toLowerCase());
+      const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
+
+      if (notesIdx < 0) return;
+
+      for (let i = 1; i < data.length; i++) {
+        const notesText = String(data[i][notesIdx] || "");
+        if (!notesText) continue;
+
+        const userMatches = notesText.match(/\|[^|]*?-\s*([^|]+?)\s*\|/g);
+        if (userMatches) {
+          userMatches.forEach(m => {
+            const userExtract = m.replace(/^\|[^|]*?-\s*/, '').replace(/\s*\|$/, '').trim();
+            if (userExtract && !userExtract.toLowerCase().includes("outcome:")) {
+              usersSet.add(userExtract);
+            }
+          });
+        }
+      }
+    });
+
+    return { success: true, users: Array.from(usersSet).sort() };
+  } catch (err) {
+    return { success: false, users: [], error: err.toString() };
+  }
+}
+
+/**
+ * Fetches call logs with optional targetDate AND targetUser filtering.
+ */
+function getAllCallLogs(targetDate, targetUser) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheetsToScan = [
@@ -185,13 +229,22 @@ function getAllCallLogs(targetDate) {
               const logMeta = match[2];
               const logNote = match[3];
 
+              let logUser = "";
+              const userExtract = logMeta.match(/-\s*([^\|]+)/);
+              if (userExtract) {
+                logUser = userExtract[1].trim();
+              }
+
               let matchedOutcome = outcome;
               const outcomeExtract = logMeta.match(/Outcome:\s*([^\|]+)/i);
               if (outcomeExtract) {
                 matchedOutcome = outcomeExtract[1].trim();
               }
 
-              if (!targetDate || targetDate === logDate) {
+              const dateMatch = !targetDate || targetDate === logDate;
+              const userMatch = !targetUser || targetUser === "ALL" || logUser.toLowerCase() === targetUser.toLowerCase();
+
+              if (dateMatch && userMatch) {
                 logs.push({
                   source: config.label,
                   tabKey: config.key,
@@ -202,6 +255,7 @@ function getAllCallLogs(targetDate) {
                   phone: phone || "-",
                   status: matchedOutcome,
                   outcome: matchedOutcome,
+                  loggedUser: logUser || "System/Admin",
                   notes: logNote || lineStr,
                   row: i + 1
                 });
@@ -210,7 +264,7 @@ function getAllCallLogs(targetDate) {
           });
 
           if (!parsedAnyLine && formattedDate) {
-            if (!targetDate || targetDate === formattedDate) {
+            if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL")) {
               logs.push({
                 source: config.label,
                 tabKey: config.key,
@@ -221,13 +275,14 @@ function getAllCallLogs(targetDate) {
                 phone: phone || "-",
                 status: outcome,
                 outcome: outcome,
+                loggedUser: "System/Admin",
                 notes: notesText,
                 row: i + 1
               });
             }
           }
         } else if (formattedDate) {
-          if (!targetDate || targetDate === formattedDate) {
+          if ((!targetDate || targetDate === formattedDate) && (!targetUser || targetUser === "ALL")) {
             logs.push({
               source: config.label,
               tabKey: config.key,
@@ -238,6 +293,7 @@ function getAllCallLogs(targetDate) {
               phone: phone || "-",
               status: outcome,
               outcome: outcome,
+              loggedUser: "System/Admin",
               notes: "No notes recorded",
               row: i + 1
             });
@@ -416,7 +472,10 @@ function getCallTractionMetrics() {
   }
 }
 
-function getDailyCallBreakdown() {
+/**
+ * Fetches daily call breakdown supporting optional user filter.
+ */
+function getDailyCallBreakdown(targetUser) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheetsToScan = [SHEET_NAME, CLIENT_DIRECTORY_SHEET_NAME, CPM_MASTER_LIST_SHEET_NAME, HOME_HEALTH_SHEET_NAME, HOSPICE_SHEET_NAME];
@@ -447,28 +506,9 @@ function getDailyCallBreakdown() {
 
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
-        let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
         let statusVal = statusIdx >= 0 ? String(row[statusIdx] || "").trim() : "";
         if (!statusVal) {
           statusVal = (sheetName === CLIENT_DIRECTORY_SHEET_NAME || sheetName === SHEET_NAME) ? DEFAULT_STATUS : "To Call";
-        }
-
-        let formattedDate = "";
-        if (rawDate instanceof Date) {
-          formattedDate = Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        } else if (rawDate) {
-          const parsed = new Date(rawDate);
-          if (!isNaN(parsed.getTime())) {
-            formattedDate = Utilities.formatDate(parsed, Session.getScriptTimeZone(), "yyyy-MM-dd");
-          }
-        }
-
-        if (formattedDate) {
-          if (!dailyMap[formattedDate]) {
-            dailyMap[formattedDate] = { totalCalls: 0, statuses: {} };
-          }
-          dailyMap[formattedDate].totalCalls += 1;
-          dailyMap[formattedDate].statuses[statusVal] = (dailyMap[formattedDate].statuses[statusVal] || 0) + 1;
         }
 
         if (notesIdx >= 0 && row[notesIdx]) {
@@ -479,18 +519,31 @@ function getDailyCallBreakdown() {
             const logDate = match[1];
             const logMeta = match[2] || "";
 
+            let logUser = "";
+            const userExtract = logMeta.match(/-\s*([^\|]+)/);
+            if (userExtract) {
+              logUser = userExtract[1].trim();
+            }
+
+            if (targetUser && targetUser !== "ALL" && logUser.toLowerCase() !== targetUser.toLowerCase()) {
+              continue;
+            }
+
             let matchedOutcome = statusVal;
             const outcomeExtract = logMeta.match(/Outcome:\s*([^\|]+)/i);
             if (outcomeExtract) {
               matchedOutcome = outcomeExtract[1].trim();
             }
 
-            if (logDate && logDate !== formattedDate) {
+            if (logDate) {
               if (!dailyMap[logDate]) {
-                dailyMap[logDate] = { totalCalls: 0, statuses: {} };
+                dailyMap[logDate] = { totalCalls: 0, statuses: {}, users: {} };
               }
               dailyMap[logDate].totalCalls += 1;
               dailyMap[logDate].statuses[matchedOutcome] = (dailyMap[logDate].statuses[matchedOutcome] || 0) + 1;
+              if (logUser) {
+                dailyMap[logDate].users[logUser] = (dailyMap[logDate].users[logUser] || 0) + 1;
+              }
             }
           }
         }
@@ -659,7 +712,6 @@ function getTabData(tabKey) {
       const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || "";
       const notesVal = recordData["Notes"] || recordData["notes"] || recordData["Recent Call Notes"] || recordData["Call History Log"] || recordData["History Log"] || "";
 
-      // Dynamic case-insensitive Tier lookup
       const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
       const tierVal = tierKey ? recordData[tierKey] : "";
 
