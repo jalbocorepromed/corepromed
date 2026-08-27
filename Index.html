@@ -554,7 +554,7 @@
                 <th class="p-3 w-[80px] shrink-0">Tier</th>
                 <th class="p-3 w-[130px] shrink-0">Phone Number</th>
                 <th class="p-3 w-[140px] shrink-0">OUTCOME</th>
-                <th class="p-3 min-w-[320px]">Logged Note / Details</th>
+                <th class="p-3 w-[280px] max-w-[320px] shrink-0">Logged Note / Details</th>
                 <th class="p-3 w-[70px] shrink-0 text-center">Action</th>
               </tr>
             </thead>
@@ -1495,7 +1495,7 @@
               ${displayOutcome}
             </span>
           </td>
-          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap min-w-[320px]">${item.notes || '-'}</td>
+          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words w-[280px] max-w-[320px] max-h-24 overflow-y-auto custom-scroll block shrink-0">${item.notes || '-'}</td>
           <td class="p-3 text-center w-[70px] shrink-0">
             <button onclick="openEditFromCallLog('${item.tabKey}', ${item.row})" 
                     class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded text-[10px] shadow-2xs transition cursor-pointer">
