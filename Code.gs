@@ -521,7 +521,7 @@ function getCallTractionMetrics() {
 }
 
 /**
- * Fetches daily call breakdown with exact user name filter matching.
+ * Fetches daily call breakdown strictly filtered by targetUser if specified.
  */
 function getDailyCallBreakdown(targetUser) {
   try {
@@ -593,6 +593,7 @@ function getDailyCallBreakdown(targetUser) {
         }
 
         loggedNoteEntries.forEach(entry => {
+          // Strictly exclude entries that don't match targetUser when filter is active
           if (targetUser && targetUser !== "ALL" && entry.user.toLowerCase() !== targetUser.toLowerCase()) {
             return;
           }

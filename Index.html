@@ -1388,8 +1388,12 @@
       fetchCallLogsData();
     }
 
-    function openCallLogsModalForDate(targetDate) {
+    function openCallLogsModalForDate(targetDate, targetUser) {
       document.getElementById('callLogDatePicker').value = targetDate;
+      if (targetUser) {
+        const userPicker = document.getElementById('callLogUserPicker');
+        if (userPicker) userPicker.value = targetUser;
+      }
       openCallLogsModal();
     }
 
@@ -2791,7 +2795,7 @@
             const rowData = res.breakdown[dateKey];
             const row = document.createElement('tr');
             row.className = "hover:bg-blue-50/60 cursor-pointer transition duration-150";
-            row.onclick = () => openCallLogsModalForDate(dateKey);
+            row.onclick = () => openCallLogsModalForDate(dateKey, targetUserVal);
 
             const statusChipsHtml = Object.keys(rowData.statuses).map(st => {
               const count = rowData.statuses[st];
