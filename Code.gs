@@ -57,7 +57,9 @@ const STATUSES = [
   "Onboarding in Progress",
   "At Risk",
   "Paused",
-  "Past Client"
+  "Past Client",
+  "Pending",
+  "Wrong Number"
 ];
 
 const CALL_OUTCOMES = [
@@ -68,7 +70,9 @@ const CALL_OUTCOMES = [
   "Acct Demo",
   "In-Person",
   "Cost Comp",
-  "Supply Audit"
+  "Supply Audit",
+  "Pending",
+  "Wrong Number"
 ];
 
 const DEFAULT_STATUS = "Potential Lead / Attempting Contact";
@@ -473,7 +477,7 @@ function getCallTractionMetrics() {
 }
 
 /**
- * FIXED: Fetches daily call breakdown with complete user filter matching.
+ * Fetches daily call breakdown with complete user filter matching.
  */
 function getDailyCallBreakdown(targetUser) {
   try {
@@ -548,7 +552,6 @@ function getDailyCallBreakdown(targetUser) {
           }
         }
 
-        // If no parsed inline call notes exist, fall back to base row date
         if (loggedNoteEntries.length === 0 && baseDateStr) {
           loggedNoteEntries.push({ date: baseDateStr, user: "System/Admin", outcome: defaultStatusVal });
         }
@@ -729,7 +732,7 @@ function getTabData(tabKey) {
         outcomeVal = colIdx >= 0 ? String(row[colIdx] || "To Call").trim() : "To Call";
       }
 
-      const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || "";
+      const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || recordData["Call Date"] || "";
       const notesVal = recordData["Notes"] || recordData["notes"] || recordData["Recent Call Notes"] || recordData["Call History Log"] || recordData["History Log"] || "";
 
       const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
@@ -738,6 +741,7 @@ function getTabData(tabKey) {
       records.push({
         row: i + 1,
         dateLogged: dateLoggedVal,
+        callDate: dateLoggedVal,
         accountName: recordData["Account Name"] || recordData["account name"] || recordData["Company Name"] || recordData["company name"] || recordData["Company"] || "",
         tier: tierVal,
         address: recordData["Address"] || recordData["address"] || "",
@@ -801,6 +805,7 @@ function saveTabCallRecord(data) {
 
       setColVal("date logged", callDateFormatted);
       setColVal("date", callDateFormatted);
+      setColVal("call date", callDateFormatted);
       setColVal("account name", data.accountName || "");
       setColVal("company name", data.accountName || "");
       setColVal("tier", data.tier || "");
@@ -881,6 +886,7 @@ function updateTabCallRecord(data) {
     if (data.callDate) {
       updateCol("date logged", callDateFormatted);
       updateCol("date", callDateFormatted);
+      updateCol("call date", callDateFormatted);
     }
 
     updateCol("account name", data.accountName || "");
@@ -1250,6 +1256,7 @@ function colorCodeRow(sheet, row, status) {
     case "Engaged / Connected":
     case "Negotiation / In Review":
     case "Paused":
+    case "Pending":
       backgroundColor = "#EAF1F7"; 
       break;
     case "Closed Won":
@@ -1261,6 +1268,7 @@ function colorCodeRow(sheet, row, status) {
     case "Closed Lost":
     case "At Risk":
     case "Past Client":
+    case "Wrong Number":
       backgroundColor = "#A2C7E3"; 
       break;
   }
