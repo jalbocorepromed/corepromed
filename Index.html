@@ -1792,6 +1792,7 @@
             <div class="flex items-center gap-2">
               <span class="font-bold text-[#1A75BC] hover:underline cursor-pointer text-xs truncate" onclick="selectRecordForModalEdit(${JSON.stringify(rec).replace(/"/g, '&quot;')})">${rec.accountName || 'Unnamed Record'}</span>
               ${rec.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${rec.tier}</span>` : ''}
+              <span class="text-[10px] font-mono text-slate-500 font-semibold bg-slate-100 px-1.5 py-0.5 rounded shrink-0">📅 Call Date: ${rec.callDate || rec.dateLogged || '-'}</span>
             </div>
             <div class="text-[10px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
               ${locationStr ? `<span>📍 ${locationStr}</span>` : ''}
@@ -2405,7 +2406,7 @@
           const style = getColumnStyle(colName);
           const colCell = document.createElement('div');
           colCell.className = style.cellClass;
-          const cellVal = (record._dataMap && record._dataMap[colName] !== undefined) ? record._dataMap[colName] : "-";
+          const cellVal = (record._dataMap && record._dataMap[colName] !== undefined) ? record._dataMap[colName] : (record[colName] || record.callDate || record.dateLogged || "-");
 
           const lowerColName = colName.toLowerCase().trim();
 

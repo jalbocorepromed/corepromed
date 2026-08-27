@@ -106,6 +106,32 @@ function getCurrentUserInfo() {
 }
 
 /**
+ * Helper function to parse/format any raw Date object or string into YYYY-MM-DD
+ */
+function formatDateToYYYYMMDD(rawDate) {
+  if (!rawDate) return "";
+  if (rawDate instanceof Date) {
+    return Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+  const parsed = new Date(rawDate);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+  const str = String(rawDate).trim();
+  const dateMatch = str.match(/\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : str;
+}
+
+/**
+ * Extract Call Date embedded inside formatted notes: [Call Date: YYYY-MM-DD | ...]
+ */
+function extractLatestCallDateFromNotes(notesText) {
+  if (!notesText) return "";
+  const match = String(notesText).match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})/i);
+  return match ? match[1] : "";
+}
+
+/**
  * Fetches all unique users who have logged calls across sheets.
  */
 function getAllCRMUsers() {
@@ -203,18 +229,7 @@ function getAllCallLogs(targetDate, targetUser) {
         }
 
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
-        let formattedDate = "";
-
-        if (rawDate instanceof Date) {
-          formattedDate = Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        } else if (rawDate) {
-          const parsed = new Date(rawDate);
-          if (!isNaN(parsed.getTime())) {
-            formattedDate = Utilities.formatDate(parsed, Session.getScriptTimeZone(), "yyyy-MM-dd");
-          } else {
-            formattedDate = String(rawDate).trim();
-          }
-        }
+        let formattedDate = formatDateToYYYYMMDD(rawDate);
 
         let notesText = notesIdx >= 0 ? String(row[notesIdx] || "").trim() : "";
 
@@ -516,15 +531,7 @@ function getDailyCallBreakdown(targetUser) {
         }
 
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
-        let baseDateStr = "";
-        if (rawDate instanceof Date) {
-          baseDateStr = Utilities.formatDate(rawDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        } else if (rawDate) {
-          const parsed = new Date(rawDate);
-          if (!isNaN(parsed.getTime())) {
-            baseDateStr = Utilities.formatDate(parsed, Session.getScriptTimeZone(), "yyyy-MM-dd");
-          }
-        }
+        let baseDateStr = formatDateToYYYYMMDD(rawDate);
 
         let notesText = notesIdx >= 0 ? String(row[notesIdx] || "").trim() : "";
         let loggedNoteEntries = [];
@@ -608,6 +615,7 @@ function getAllCompaniesData() {
     const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase());
     const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase());
     const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase());
+    const notesCol = headers.findIndex(h => h.includes("notes") || h.includes("history"));
 
     const corporateCol = headers.indexOf(CORPORATE_COLUMN_NAME.toLowerCase());
     const leadGeneratorCol = headers.indexOf(LEAD_GENERATOR_COLUMN_NAME.toLowerCase());
@@ -628,16 +636,10 @@ function getAllCompaniesData() {
     const formattedCompanies = dataValues.map((rowArr, index) => {
       const rowNum = index + 2; 
       let dateVal = (dateCol >= 0 && dateCol < rowArr.length) ? rowArr[dateCol] : "";
+      dateVal = formatDateToYYYYMMDD(dateVal);
 
-      if (dateVal instanceof Date) {
-        try {
-          dateVal = Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy-MM-dd");
-        } catch(e) {
-          dateVal = "";
-        }
-      } else if (dateVal) {
-        dateVal = String(dateVal);
-      }
+      let notesVal = (notesCol >= 0 && notesCol < rowArr.length) ? String(rowArr[notesCol] || "").trim() : "";
+      let callDateVal = extractLatestCallDateFromNotes(notesVal) || dateVal;
 
       let currentStatus = (statusCol >= 0 && statusCol < rowArr.length) ? String(rowArr[statusCol]).trim() : "";
       if(!currentStatus) currentStatus = DEFAULT_STATUS;
@@ -645,7 +647,7 @@ function getAllCompaniesData() {
       return {
         row: rowNum,
         date: dateVal,
-        callDate: dateVal,
+        callDate: callDateVal,
         company: (companyCol >= 0 && companyCol < rowArr.length) ? String(rowArr[companyCol]).trim() : "",
         dba: (dbaCol >= 0 && dbaCol < rowArr.length) ? String(rowArr[dbaCol]).trim() : "", 
         facilityType: (facilityTypeCol >= 0 && facilityTypeCol < rowArr.length) ? String(rowArr[facilityTypeCol]).trim() : "",
@@ -732,16 +734,22 @@ function getTabData(tabKey) {
         outcomeVal = colIdx >= 0 ? String(row[colIdx] || "To Call").trim() : "To Call";
       }
 
-      const dateLoggedVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || recordData["Call Date"] || "";
       const notesVal = recordData["Notes"] || recordData["notes"] || recordData["Recent Call Notes"] || recordData["Call History Log"] || recordData["History Log"] || "";
+      let rawDateVal = recordData["Date Logged"] || recordData["date logged"] || recordData["Date"] || recordData["Call Date"] || recordData["call date"] || recordData["Last Called Date"] || "";
+      
+      let baseFormattedDate = formatDateToYYYYMMDD(rawDateVal);
+      let callDateVal = extractLatestCallDateFromNotes(notesVal) || baseFormattedDate;
+
+      // Ensure explicit Call Date entry inside recordData map for display
+      recordData["Call Date"] = callDateVal;
 
       const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
       const tierVal = tierKey ? recordData[tierKey] : "";
 
       records.push({
         row: i + 1,
-        dateLogged: dateLoggedVal,
-        callDate: dateLoggedVal,
+        dateLogged: baseFormattedDate,
+        callDate: callDateVal,
         accountName: recordData["Account Name"] || recordData["account name"] || recordData["Company Name"] || recordData["company name"] || recordData["Company"] || "",
         tier: tierVal,
         address: recordData["Address"] || recordData["address"] || "",
@@ -758,7 +766,13 @@ function getTabData(tabKey) {
       });
     }
 
-    return { headers: headers, records: records, statuses: STATUSES, outcomes: CALL_OUTCOMES };
+    // Ensure "Call Date" is visible in tab headers if not present
+    let displayHeaders = [...headers];
+    if (!displayHeaders.some(h => h.toLowerCase() === "call date" || h.toLowerCase() === "date logged")) {
+      displayHeaders.unshift("Call Date");
+    }
+
+    return { headers: displayHeaders, records: records, statuses: STATUSES, outcomes: CALL_OUTCOMES };
   } catch (err) {
     return { headers: [], records: [], statuses: STATUSES, outcomes: CALL_OUTCOMES, error: err.toString() };
   }
@@ -780,7 +794,7 @@ function saveTabCallRecord(data) {
 
     if (!sheet) {
       sheet = ss.insertSheet(targetSheetName);
-      sheet.appendRow(["Date Logged", "Account Name", "Tier", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", statusColName, "Notes"]);
+      sheet.appendRow(["Date Logged", "Call Date", "Account Name", "Tier", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", statusColName, "Notes"]);
       sheet.getRange(1, 1, 1, sheet.getLastColumn()).setFontWeight("bold").setBackground("#F1F5F9");
     }
 
@@ -827,6 +841,7 @@ function saveTabCallRecord(data) {
       sheet.appendRow(rowArr);
     } else {
       sheet.appendRow([
+        callDateFormatted,
         callDateFormatted,
         data.accountName || "",
         data.tier || "",
@@ -887,6 +902,7 @@ function updateTabCallRecord(data) {
       updateCol("date logged", callDateFormatted);
       updateCol("date", callDateFormatted);
       updateCol("call date", callDateFormatted);
+      updateCol("last called date", callDateFormatted);
     }
 
     updateCol("account name", data.accountName || "");
@@ -965,15 +981,11 @@ function getRowDataByNumber(row) {
     const stateCol = headers.indexOf(STATE_COLUMN_NAME.toLowerCase()) + 1;
     const zipCol = headers.indexOf(ZIP_COLUMN_NAME.toLowerCase()) + 1;
 
-    let dateVal = "";
-    if (dateCol > 0) {
-      const tempDate = sheet.getRange(row, dateCol).getValue();
-      if (tempDate instanceof Date) {
-        dateVal = Utilities.formatDate(tempDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
-      } else if (tempDate) {
-        dateVal = String(tempDate);
-      }
-    }
+    let rawDateVal = dateCol > 0 ? sheet.getRange(row, dateCol).getValue() : "";
+    let dateVal = formatDateToYYYYMMDD(rawDateVal);
+
+    let historyNotesVal = historyCol > 0 ? String(sheet.getRange(row, historyCol).getValue()).trim() : "";
+    let callDateVal = extractLatestCallDateFromNotes(historyNotesVal) || dateVal;
 
     let currentStatus = statusCol > 0 ? String(sheet.getRange(row, statusCol).getValue()).trim() : "";
     if(!currentStatus) currentStatus = DEFAULT_STATUS;
@@ -982,7 +994,7 @@ function getRowDataByNumber(row) {
       row: row,
       leadName: (companyCol > 0 ? String(sheet.getRange(row, companyCol).getValue()).trim() : "") || `Row ${row}`,
       date: dateVal,
-      callDate: dateVal,
+      callDate: callDateVal,
       company: companyCol > 0 ? String(sheet.getRange(row, companyCol).getValue()).trim() : "",
       dba: dbaCol > 0 ? String(sheet.getRange(row, dbaCol).getValue()).trim() : "", 
       facilityType: facilityTypeCol > 0 ? String(sheet.getRange(row, facilityTypeCol).getValue()).trim() : "",
@@ -992,7 +1004,7 @@ function getRowDataByNumber(row) {
       phone: phoneCol > 0 ? String(sheet.getRange(row, phoneCol).getValue()).trim() : "",
       currentStatus: currentStatus,
       recentNotes: recentNotesCol > 0 ? String(sheet.getRange(row, recentNotesCol).getValue()).trim() : "",
-      callHistory: historyCol > 0 ? String(sheet.getRange(row, historyCol).getValue()).trim() : "",
+      callHistory: historyNotesVal,
       statuses: STATUSES,
 
       corporate: corporateCol > 0 ? String(sheet.getRange(row, corporateCol).getValue()).trim() : "",
