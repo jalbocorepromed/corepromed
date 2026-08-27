@@ -463,7 +463,7 @@
 
   <!-- CALL LOGS DASHBOARD MODAL -->
   <div id="callLogsModalOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white w-full max-w-5xl rounded-xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh]">
+    <div class="bg-white w-full max-w-6xl rounded-xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh]">
 
       <!-- Modal Header -->
       <div class="flex items-center justify-between bg-indigo-50 border-b border-indigo-100 px-6 py-4 shrink-0">
@@ -530,8 +530,8 @@
         </div>
       </div>
 
-      <!-- Call Logs Data Content -->
-      <div class="flex-1 overflow-y-auto custom-scroll p-5 bg-white min-h-[250px]">
+      <!-- Call Logs Data Content (Added Horizontal Scroll Enabled Wrapper) -->
+      <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll p-5 bg-white min-h-[250px]">
 
         <div id="callLogsLoadingSpinner" class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
           <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -543,19 +543,19 @@
           <p class="text-xs font-medium italic">No call logs found for the selected calendar date.</p>
         </div>
 
-        <div id="callLogsTableContainer" class="hidden border border-slate-200 rounded-lg overflow-hidden">
-          <table class="w-full text-left text-xs border-collapse">
+        <div id="callLogsTableContainer" class="hidden border border-slate-200 rounded-lg min-w-max">
+          <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
             <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200 sticky top-0 z-10 shadow-2xs">
               <tr>
-                <th class="p-3 w-[100px]">Call Date</th>
-                <th class="p-3 w-[110px]">Logged By</th>
-                <th class="p-3 w-[110px]">Directory Source</th>
-                <th class="p-3 w-[150px]">Account Name</th>
-                <th class="p-3 w-[60px]">Tier</th>
-                <th class="p-3 w-[110px]">Phone Number</th>
-                <th class="p-3 w-[120px]">OUTCOME</th>
-                <th class="p-3 w-[200px]">Logged Note / Details</th>
-                <th class="p-3 w-[60px] text-center">Action</th>
+                <th class="p-3 w-[110px] shrink-0">Call Date</th>
+                <th class="p-3 w-[120px] shrink-0">Logged By</th>
+                <th class="p-3 w-[130px] shrink-0">Directory Source</th>
+                <th class="p-3 w-[180px] shrink-0">Account Name</th>
+                <th class="p-3 w-[80px] shrink-0">Tier</th>
+                <th class="p-3 w-[130px] shrink-0">Phone Number</th>
+                <th class="p-3 w-[140px] shrink-0">OUTCOME</th>
+                <th class="p-3 min-w-[320px]">Logged Note / Details</th>
+                <th class="p-3 w-[70px] shrink-0 text-center">Action</th>
               </tr>
             </thead>
             <tbody id="callLogsTableBody" class="divide-y divide-slate-100"></tbody>
@@ -566,7 +566,7 @@
 
       <!-- Footer Actions -->
       <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0 text-xs">
-        <span class="text-[11px] text-slate-500 font-medium">Tip: Click the Edit button to modify log context.</span>
+        <span class="text-[11px] text-slate-500 font-medium">Tip: Click the Edit button to modify log context. Scroll horizontally to read full notes data.</span>
         <button onclick="closeCallLogsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-lg transition cursor-pointer">
           Close View
         </button>
@@ -1468,33 +1468,33 @@
         const displayOutcome = item.outcome || item.status || 'To Call';
 
         tr.innerHTML = `
-          <td class="p-3 font-mono font-bold text-slate-800 shrink-0 whitespace-nowrap w-[100px]">
+          <td class="p-3 font-mono font-bold text-slate-800 shrink-0 whitespace-nowrap w-[110px]">
             <div>${item.callDate || '-'}</div>
           </td>
-          <td class="p-3 text-slate-700 font-medium truncate w-[110px]">
+          <td class="p-3 text-slate-700 font-medium truncate w-[120px] shrink-0">
             <span class="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100 font-bold truncate block">
               ${item.loggedUser || 'System'}
             </span>
           </td>
-          <td class="p-3 font-semibold text-slate-600 truncate w-[110px]">
+          <td class="p-3 font-semibold text-slate-600 truncate w-[130px] shrink-0">
             <span class="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
               ${item.source || 'General'}
             </span>
           </td>
-          <td class="p-3 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate w-[150px]" onclick="openEditFromCallLog('${item.tabKey}', ${item.row})">${item.accountName || '-'}</td>
-          <td class="p-3 truncate w-[60px]">
+          <td class="p-3 font-bold text-[#1A75BC] hover:underline cursor-pointer truncate w-[180px] shrink-0" onclick="openEditFromCallLog('${item.tabKey}', ${item.row})">${item.accountName || '-'}</td>
+          <td class="p-3 truncate w-[80px] shrink-0">
             ${item.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${item.tier}</span>` : '-'}
           </td>
-          <td class="p-3 font-mono text-slate-700 truncate w-[110px]">${item.phone || '-'}</td>
-          <td class="p-3 truncate w-[120px]">
+          <td class="p-3 font-mono text-slate-700 truncate w-[130px] shrink-0">${item.phone || '-'}</td>
+          <td class="p-3 truncate w-[140px] shrink-0">
             <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
               ${displayOutcome}
             </span>
           </td>
-          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap w-[200px] min-w-[160px]">${item.notes || '-'}</td>
-          <td class="p-3 text-center w-[60px] shrink-0">
+          <td class="p-3 text-slate-600 text-[11px] leading-relaxed break-words whitespace-pre-wrap min-w-[320px]">${item.notes || '-'}</td>
+          <td class="p-3 text-center w-[70px] shrink-0">
             <button onclick="openEditFromCallLog('${item.tabKey}', ${item.row})" 
-                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded text-[10px] shadow-2xs transition cursor-pointer">
+                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded text-[10px] shadow-2xs transition cursor-pointer">
               Edit
             </button>
           </td>
