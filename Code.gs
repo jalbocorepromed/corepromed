@@ -93,16 +93,45 @@ function showSidebar() {
 
 function getActiveCRMUser() {
   const userEmail = Session.getActiveUser().getEmail() || Session.getEffectiveUser().getEmail();
-  return userEmail ? userEmail : "CRM Admin";
+  return userEmail ? extractCleanUserName(userEmail) : "CRM Admin";
 }
 
 function getCurrentUserInfo() {
-  const fullUser = getActiveCRMUser();
-  const displayName = fullUser.includes('@') ? fullUser.split('@')[0] : fullUser;
+  const fullUser = Session.getActiveUser().getEmail() || Session.getEffectiveUser().getEmail() || "CRM Admin";
   return {
     email: fullUser,
-    name: displayName
+    name: extractCleanUserName(fullUser)
   };
+}
+
+/**
+ * Extracts JUST the user name from formatted meta text or email strings.
+ * E.g., "john.doe@company.com" -> "John Doe"
+ * E.g., "02/18/2026 10:00 AM - Jane Doe" -> "Jane Doe"
+ */
+function extractCleanUserName(rawUserStr) {
+  if (!rawUserStr) return "System/Admin";
+  let clean = String(rawUserStr).trim();
+
+  // Strip metadata before user (e.g., date - username)
+  if (clean.includes('-')) {
+    const parts = clean.split('-');
+    clean = parts[parts.length - 1].trim();
+  }
+
+  // Remove outcome tags if attached
+  clean = clean.replace(/Outcome:.*$/i, '').trim();
+
+  // If email, extract username portion and convert dots/underscores to spaces
+  if (clean.includes('@')) {
+    clean = clean.split('@')[0];
+    clean = clean.replace(/[._]/g, ' ');
+  }
+
+  // Capitalize Name Words
+  clean = clean.replace(/\b\w/g, c => c.toUpperCase());
+
+  return clean || "System/Admin";
 }
 
 /**
@@ -132,7 +161,7 @@ function extractLatestCallDateFromNotes(notesText) {
 }
 
 /**
- * Fetches all unique users who have logged calls across sheets.
+ * Fetches all unique users who have logged calls across sheets (returns ONLY clean names).
  */
 function getAllCRMUsers() {
   try {
@@ -157,9 +186,9 @@ function getAllCRMUsers() {
         const userMatches = notesText.match(/\|[^|]*?-\s*([^|]+?)\s*\|/g);
         if (userMatches) {
           userMatches.forEach(m => {
-            const userExtract = m.replace(/^\|[^|]*?-\s*/, '').replace(/\s*\|$/, '').trim();
-            if (userExtract && !userExtract.toLowerCase().includes("outcome:")) {
-              usersSet.add(userExtract);
+            const rawExtract = m.replace(/^\|[^|]*?-\s*/, '').replace(/\s*\|$/, '').trim();
+            if (rawExtract && !rawExtract.toLowerCase().includes("outcome:")) {
+              usersSet.add(extractCleanUserName(rawExtract));
             }
           });
         }
@@ -248,10 +277,10 @@ function getAllCallLogs(targetDate, targetUser) {
               const logMeta = match[2];
               const logNote = match[3];
 
-              let logUser = "";
+              let logUser = "System/Admin";
               const userExtract = logMeta.match(/-\s*([^\|]+)/);
               if (userExtract) {
-                logUser = userExtract[1].trim();
+                logUser = extractCleanUserName(userExtract[1]);
               }
 
               let matchedOutcome = outcome;
@@ -274,7 +303,7 @@ function getAllCallLogs(targetDate, targetUser) {
                   phone: phone || "-",
                   status: matchedOutcome,
                   outcome: matchedOutcome,
-                  loggedUser: logUser || "System/Admin",
+                  loggedUser: logUser,
                   notes: logNote || lineStr,
                   row: i + 1
                 });
@@ -492,7 +521,7 @@ function getCallTractionMetrics() {
 }
 
 /**
- * Fetches daily call breakdown with complete user filter matching.
+ * Fetches daily call breakdown with exact user name filter matching.
  */
 function getDailyCallBreakdown(targetUser) {
   try {
@@ -546,7 +575,7 @@ function getDailyCallBreakdown(targetUser) {
             let logUser = "System/Admin";
             const userExtract = logMeta.match(/-\s*([^\|]+)/);
             if (userExtract) {
-              logUser = userExtract[1].trim();
+              logUser = extractCleanUserName(userExtract[1]);
             }
 
             let matchedOutcome = defaultStatusVal;
@@ -800,7 +829,7 @@ function saveTabCallRecord(data) {
 
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
     const callDateFormatted = data.callDate || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-    const currentUser = data.user || getActiveCRMUser();
+    const currentUser = extractCleanUserName(data.user || getActiveCRMUser());
     
     const statusOrOutcomeVal = (data.tab === "clientDirectory") 
       ? (data.status || DEFAULT_STATUS) 
@@ -887,7 +916,7 @@ function updateTabCallRecord(data) {
 
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
     const callDateFormatted = data.callDate || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-    const currentUser = data.user || getActiveCRMUser();
+    const currentUser = extractCleanUserName(data.user || getActiveCRMUser());
 
     const rawHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim().toLowerCase());
 
@@ -1071,7 +1100,7 @@ function addNewLeadFromSidebar(data) {
 
   const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
   const callDateFormatted = data.callDate || data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-  const currentUser = data.user || getActiveCRMUser();
+  const currentUser = extractCleanUserName(data.user || getActiveCRMUser());
   const currentStatusVal = data.status || DEFAULT_STATUS;
 
   if (dateCol >= 0 && callDateFormatted) {
@@ -1171,7 +1200,7 @@ function updateLeadFromSidebar(data) {
 
   const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
   const callDateFormatted = data.callDate || data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-  const currentUser = data.user || getActiveCRMUser();
+  const currentUser = extractCleanUserName(data.user || getActiveCRMUser());
   const currentStatusVal = data.status || DEFAULT_STATUS;
 
   if (dateCol > 0 && callDateFormatted) {

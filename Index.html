@@ -1360,9 +1360,9 @@
 
       google.script.run
         .withSuccessHandler(userInfo => {
-          if (userInfo && userInfo.email) {
-            loggedInUser = userInfo.email;
-            document.getElementById('loggedInUserBadge').innerText = `User: ${userInfo.name || userInfo.email}`;
+          if (userInfo && userInfo.name) {
+            loggedInUser = userInfo.name;
+            document.getElementById('loggedInUserBadge').innerText = `User: ${userInfo.name}`;
           } else {
             document.getElementById('loggedInUserBadge').innerText = `User: CRM Admin`;
           }
@@ -1473,7 +1473,7 @@
           </td>
           <td class="p-3 text-slate-700 font-medium truncate w-[120px] shrink-0">
             <span class="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100 font-bold truncate block">
-              ${item.loggedUser || 'System'}
+              ${item.loggedUser || 'System/Admin'}
             </span>
           </td>
           <td class="p-3 font-semibold text-slate-600 truncate w-[130px] shrink-0">
