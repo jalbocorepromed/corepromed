@@ -113,25 +113,18 @@ function extractCleanUserName(rawUserStr) {
   if (!rawUserStr) return "System/Admin";
   let clean = String(rawUserStr).trim();
 
-  // Remove outcome prefix/suffix if present
-  clean = clean.replace(/Outcome:.*$/i, '').trim();
-
-  // Split date/time metadata if present (e.g. "05/20/2024 10:00 AM - Mobregon")
   if (clean.includes('-')) {
     const parts = clean.split('-');
     clean = parts[parts.length - 1].trim();
   }
 
-  // Handle email addresses
+  clean = clean.replace(/Outcome:.*$/i, '').trim();
+
   if (clean.includes('@')) {
     clean = clean.split('@')[0];
     clean = clean.replace(/[._]/g, ' ');
   }
 
-  // Strip pipe characters
-  clean = clean.replace(/\|/g, '').trim();
-
-  // Capitalize first letter of each word
   clean = clean.replace(/\b\w/g, c => c.toUpperCase());
 
   return clean || "System/Admin";
@@ -164,7 +157,7 @@ function extractLatestCallDateFromNotes(notesText) {
 }
 
 /**
- * Fetches all unique users who have logged calls or are owners across sheets.
+ * Fetches all unique users who have logged calls across sheets.
  */
 function getAllCRMUsers() {
   try {
@@ -178,32 +171,22 @@ function getAllCRMUsers() {
 
       const data = sheet.getDataRange().getValues();
       const headers = data[0].map(h => String(h).trim().toLowerCase());
-      
       const notesIdx = headers.findIndex(h => h.includes("notes") || h.includes("history"));
-      const ownerIdx = headers.findIndex(h => h.includes("owner") || h.includes("generator"));
+
+      if (notesIdx < 0) return;
 
       for (let i = 1; i < data.length; i++) {
-        // Scan explicitly defined owners/lead generators
-        if (ownerIdx >= 0 && data[i][ownerIdx]) {
-          const ownerClean = extractCleanUserName(data[i][ownerIdx]);
-          if (ownerClean && ownerClean !== "System/Admin") usersSet.add(ownerClean);
-        }
+        const notesText = String(data[i][notesIdx] || "");
+        if (!notesText) continue;
 
-        // Scan Notes / History Log entries
-        if (notesIdx >= 0 && data[i][notesIdx]) {
-          const notesText = String(data[i][notesIdx] || "");
-          
-          // Match usernames after timestamp or dash in formatted note strings
-          const userMatches = notesText.match(/(?:-\s*|\|\s*)([A-Za-z0-9._%+-]+(?:\s+[A-Za-z0-9._%+-]+)*)(?=\s*\||\s*\]|$)/g);
-          if (userMatches) {
-            userMatches.forEach(m => {
-              const rawExtract = m.replace(/^[-\|\s]+/, '').trim();
-              if (rawExtract && !rawExtract.toLowerCase().includes("outcome:") && !rawExtract.toLowerCase().includes("call date")) {
-                const cleaned = extractCleanUserName(rawExtract);
-                if (cleaned && cleaned !== "System/Admin") usersSet.add(cleaned);
-              }
-            });
-          }
+        const userMatches = notesText.match(/\|[^|]*?-\s*([^|]+?)\s*\|/g);
+        if (userMatches) {
+          userMatches.forEach(m => {
+            const rawExtract = m.replace(/^\|[^|]*?-\s*/, '').replace(/\s*\|$/, '').trim();
+            if (rawExtract && !rawExtract.toLowerCase().includes("outcome:")) {
+              usersSet.add(extractCleanUserName(rawExtract));
+            }
+          });
         }
       }
     });
@@ -283,7 +266,7 @@ function getAllCallLogs(targetDate, targetUser) {
             const lineStr = line.trim();
             if (!lineStr) return;
 
-            const match = lineStr.match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]:\s*(.*)/i);
+            const match = lineStr.match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]:\s*(.*)/);
             if (match) {
               parsedAnyLine = true;
               const logDate = match[1];
@@ -291,7 +274,7 @@ function getAllCallLogs(targetDate, targetUser) {
               const logNote = match[3];
 
               let logUser = "System/Admin";
-              const userExtract = logMeta.match(/(?:-\s*|\|\s*)([A-Za-z0-9._%+-]+(?:\s+[A-Za-z0-9._%+-]+)*)(?=\s*\||\s*$)/);
+              const userExtract = logMeta.match(/-\s*([^\|]+)/);
               if (userExtract) {
                 logUser = extractCleanUserName(userExtract[1]);
               }
@@ -579,14 +562,14 @@ function getDailyCallBreakdown(targetUser) {
         let loggedNoteEntries = [];
 
         if (notesText) {
-          const logRegex = /\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]/gi;
+          const logRegex = /\[Call Date:\s*(\d{4}-\d{2}-\d{2})\s*\|?\s*([^\]]*?)\]/g;
           let match;
           while ((match = logRegex.exec(notesText)) !== null) {
             const logDate = match[1];
             const logMeta = match[2] || "";
 
             let logUser = "System/Admin";
-            const userExtract = logMeta.match(/(?:-\s*|\|\s*)([A-Za-z0-9._%+-]+(?:\s+[A-Za-z0-9._%+-]+)*)(?=\s*\||\s*$)/);
+            const userExtract = logMeta.match(/-\s*([^\|]+)/);
             if (userExtract) {
               logUser = extractCleanUserName(userExtract[1]);
             }
