@@ -1209,8 +1209,10 @@
       "Declined",
       "Acct Demo",
       "In-Person",
+      "IP-email sent",
       "Cost Comp",
       "Supply Audit",
+      "Email sent",
       "Pending",
       "Wrong Number"
     ];
@@ -1293,10 +1295,14 @@
           return "bg-purple-100 text-purple-800 border border-purple-200";
         case "In-Person":
           return "bg-indigo-100 text-indigo-800 border border-indigo-200";
+        case "IP-email sent":
+          return "bg-violet-100 text-violet-800 border border-violet-200";
         case "Cost Comp":
           return "bg-teal-100 text-teal-800 border border-teal-200";
         case "Supply Audit":
           return "bg-cyan-100 text-cyan-800 border border-cyan-200";
+        case "Email sent":
+          return "bg-sky-100 text-sky-800 border border-sky-200";
         case "Pending":
           return "bg-orange-100 text-orange-800 border border-orange-200";
         case "Wrong Number":
@@ -3092,7 +3098,7 @@
           datasets: [{
             label: 'Call Outcomes',
             data: values,
-            backgroundColor: ['#1A75BC', '#F59E0B', '#64748B', '#DC2626', '#8B5CF6', '#6366F1', '#0D9488', '#06B6D4', '#EA580C', '#EF4444'],
+            backgroundColor: ['#1A75BC', '#F59E0B', '#64748B', '#DC2626', '#8B5CF6', '#6366F1', '#7C3AED', '#0D9488', '#06B6D4', '#0284C7', '#EA580C', '#EF4444'],
             borderRadius: 6
           }]
         },

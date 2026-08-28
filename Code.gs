@@ -69,8 +69,10 @@ const CALL_OUTCOMES = [
   "Declined",
   "Acct Demo",
   "In-Person",
+  "IP-email sent",
   "Cost Comp",
   "Supply Audit",
+  "Email sent",
   "Pending",
   "Wrong Number"
 ];
