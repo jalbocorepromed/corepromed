@@ -530,7 +530,7 @@
         </div>
       </div>
 
-      <!-- Call Logs Data Content (Added Horizontal Scroll Enabled Wrapper) -->
+      <!-- Call Logs Data Content -->
       <div class="flex-1 overflow-x-auto overflow-y-auto custom-scroll p-5 bg-white min-h-[250px]">
 
         <div id="callLogsLoadingSpinner" class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
@@ -580,6 +580,16 @@
     <div class="flex items-center justify-between border-b border-slate-200 pb-2">
       <span class="font-bold text-slate-800 truncate" id="headerFilterTitle">Filter Header</span>
       <button onclick="closeHeaderFilterPopover()" class="text-slate-400 hover:text-slate-600 font-bold p-0.5 rounded cursor-pointer">✕</button>
+    </div>
+
+    <!-- A-Z & Z-A Sorting Section -->
+    <div class="flex items-center gap-1.5 border-b border-slate-100 pb-2">
+      <button onclick="sortCurrentColumn('asc')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1 px-2 rounded flex items-center justify-center gap-1 transition cursor-pointer text-[11px]">
+        <span>🔤 Sort A-Z</span>
+      </button>
+      <button onclick="sortCurrentColumn('desc')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1 px-2 rounded flex items-center justify-center gap-1 transition cursor-pointer text-[11px]">
+        <span>🔤 Sort Z-A</span>
+      </button>
     </div>
 
     <div>
@@ -1550,7 +1560,7 @@
       renderCallLogsTable(filtered);
     }
 
-    /* ================= HEADER COLUMN FILTER POPOVER LOGIC ================= */
+    /* ================= HEADER COLUMN FILTER POPOVER & SORT LOGIC ================= */
 
     function toggleHeaderFilterDropdown(e, tabKey, colName) {
       e.stopPropagation();
@@ -1615,6 +1625,29 @@
       const popover = document.getElementById('headerFilterPopover');
       if (popover) popover.classList.add('hidden');
       activeFilterContext = { tabKey: null, colName: null };
+    }
+
+    function sortCurrentColumn(direction) {
+      const { tabKey, colName } = activeFilterContext;
+      if (!tabKey || !colName || !tabDataStore[tabKey]) return;
+
+      tabDataStore[tabKey].sort((a, b) => {
+        let valA = (a._dataMap && a._dataMap[colName] !== undefined) ? a._dataMap[colName] : (a[colName] || '');
+        let valB = (b._dataMap && b._dataMap[colName] !== undefined) ? b._dataMap[colName] : (b[colName] || '');
+
+        valA = valA !== null && valA !== undefined ? String(valA).trim() : '';
+        valB = valB !== null && valB !== undefined ? String(valB).trim() : '';
+
+        if (!valA && valB) return 1;
+        if (valA && !valB) return -1;
+
+        const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+        return direction === 'asc' ? cmp : -cmp;
+      });
+
+      closeHeaderFilterPopover();
+      renderTabRecordsTable(tabKey);
+      displayStatusFeedbackNotification(`Sorted "${colName}" (${direction === 'asc' ? 'A-Z' : 'Z-A'})`, 'success');
     }
 
     function filterPopoverValuesList() {

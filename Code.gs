@@ -106,29 +106,23 @@ function getCurrentUserInfo() {
 
 /**
  * Extracts JUST the user name from formatted meta text or email strings.
- * E.g., "john.doe@company.com" -> "John Doe"
- * E.g., "02/18/2026 10:00 AM - Jane Doe" -> "Jane Doe"
  */
 function extractCleanUserName(rawUserStr) {
   if (!rawUserStr) return "System/Admin";
   let clean = String(rawUserStr).trim();
 
-  // Strip metadata before user (e.g., date - username)
   if (clean.includes('-')) {
     const parts = clean.split('-');
     clean = parts[parts.length - 1].trim();
   }
 
-  // Remove outcome tags if attached
   clean = clean.replace(/Outcome:.*$/i, '').trim();
 
-  // If email, extract username portion and convert dots/underscores to spaces
   if (clean.includes('@')) {
     clean = clean.split('@')[0];
     clean = clean.replace(/[._]/g, ' ');
   }
 
-  // Capitalize Name Words
   clean = clean.replace(/\b\w/g, c => c.toUpperCase());
 
   return clean || "System/Admin";
@@ -161,7 +155,7 @@ function extractLatestCallDateFromNotes(notesText) {
 }
 
 /**
- * Fetches all unique users who have logged calls across sheets (returns ONLY clean names).
+ * Fetches all unique users who have logged calls across sheets.
  */
 function getAllCRMUsers() {
   try {
@@ -593,7 +587,6 @@ function getDailyCallBreakdown(targetUser) {
         }
 
         loggedNoteEntries.forEach(entry => {
-          // Strictly exclude entries that don't match targetUser when filter is active
           if (targetUser && targetUser !== "ALL" && entry.user.toLowerCase() !== targetUser.toLowerCase()) {
             return;
           }
@@ -770,7 +763,6 @@ function getTabData(tabKey) {
       let baseFormattedDate = formatDateToYYYYMMDD(rawDateVal);
       let callDateVal = extractLatestCallDateFromNotes(notesVal) || baseFormattedDate;
 
-      // Ensure explicit Call Date entry inside recordData map for display
       recordData["Call Date"] = callDateVal;
 
       const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
@@ -796,7 +788,6 @@ function getTabData(tabKey) {
       });
     }
 
-    // Ensure "Call Date" is visible in tab headers if not present
     let displayHeaders = [...headers];
     if (!displayHeaders.some(h => h.toLowerCase() === "call date" || h.toLowerCase() === "date logged")) {
       displayHeaders.unshift("Call Date");
