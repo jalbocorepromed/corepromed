@@ -481,10 +481,10 @@
         </button>
       </div>
 
-      <!-- Controls & Calendar/User Picker -->
-      <div class="p-5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-4 shrink-0 text-xs">
+      <!-- Controls & Filters Bar -->
+      <div class="p-5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
 
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2.5">
           <div class="flex items-center space-x-2 bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-2xs">
             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             <span class="font-bold text-slate-700 text-[11px]">Select Date:</span>
@@ -498,6 +498,52 @@
             </select>
           </div>
 
+          <!-- Added Source Filter -->
+          <div class="flex items-center space-x-2 bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-2xs">
+            <span class="font-bold text-slate-700 text-[11px]">Source:</span>
+            <select id="callLogSourceFilter" onchange="filterCallLogsTable()" class="bg-transparent font-semibold text-indigo-900 text-xs focus:outline-none cursor-pointer">
+              <option value="ALL">All Sources</option>
+              <option value="Leads">Leads</option>
+              <option value="Client Directory">Client Directory</option>
+              <option value="CPM 2024 Master List">CPM 2024 Master List</option>
+              <option value="Home Health">Home Health</option>
+              <option value="Hospice">Hospice</option>
+            </select>
+          </div>
+
+          <!-- Added Tier Filter -->
+          <div class="flex items-center space-x-2 bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-2xs">
+            <span class="font-bold text-slate-700 text-[11px]">Tier:</span>
+            <select id="callLogTierFilter" onchange="filterCallLogsTable()" class="bg-transparent font-semibold text-indigo-900 text-xs focus:outline-none cursor-pointer">
+              <option value="ALL">All Tiers</option>
+              <option value="NO TIER">NO TIER</option>
+              <option value="Tier 1">Tier 1</option>
+              <option value="Tier 2">Tier 2</option>
+              <option value="Tier 3">Tier 3</option>
+              <option value="Tier 4">Tier 4</option>
+            </select>
+          </div>
+
+          <!-- Added Outcome Filter -->
+          <div class="flex items-center space-x-2 bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-2xs">
+            <span class="font-bold text-slate-700 text-[11px]">Outcome:</span>
+            <select id="callLogOutcomeFilter" onchange="filterCallLogsTable()" class="bg-transparent font-semibold text-indigo-900 text-xs focus:outline-none cursor-pointer">
+              <option value="ALL">All Outcomes</option>
+              <option value="To Call">To Call</option>
+              <option value="Call Follow-up">Call Follow-up</option>
+              <option value="Left Voicemail">Left Voicemail</option>
+              <option value="Declined">Declined</option>
+              <option value="Acct Demo">Acct Demo</option>
+              <option value="In-Person">In-Person</option>
+              <option value="IP-email sent">IP-email sent</option>
+              <option value="Cost Comp">Cost Comp</option>
+              <option value="Supply Audit">Supply Audit</option>
+              <option value="Email sent">Email sent</option>
+              <option value="Pending">Pending</option>
+              <option value="Wrong Number">Wrong Number</option>
+            </select>
+          </div>
+
           <div class="flex items-center space-x-1.5">
             <button onclick="setCallLogDateToday()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg transition text-[11px] cursor-pointer shadow-2xs">
               Today
@@ -505,11 +551,14 @@
             <button onclick="clearCallLogDate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-lg transition text-[11px] cursor-pointer shadow-2xs">
               All Dates
             </button>
+            <button onclick="resetCallLogsModalFilters()" class="bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold px-3 py-1.5 rounded-lg transition text-[11px] cursor-pointer shadow-2xs">
+              Reset Filters
+            </button>
           </div>
         </div>
 
-        <div class="flex items-center space-x-2 flex-1 min-w-[220px] max-w-sm">
-          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, tier, status, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
+        <div class="flex items-center space-x-2 flex-1 min-w-[200px] max-w-xs">
+          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
         </div>
 
       </div>
@@ -540,7 +589,7 @@
 
         <div id="callLogsEmptyState" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 space-y-2">
           <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path></svg>
-          <p class="text-xs font-medium italic">No call logs found for the selected calendar date.</p>
+          <p class="text-xs font-medium italic">No call logs found matching the filter criteria.</p>
         </div>
 
         <div id="callLogsTableContainer" class="hidden border border-slate-200 rounded-lg min-w-max">
@@ -1428,6 +1477,16 @@
       fetchCallLogsData();
     }
 
+    function resetCallLogsModalFilters() {
+      document.getElementById('callLogDatePicker').value = '';
+      if (document.getElementById('callLogUserPicker')) document.getElementById('callLogUserPicker').value = 'ALL';
+      if (document.getElementById('callLogSourceFilter')) document.getElementById('callLogSourceFilter').value = 'ALL';
+      if (document.getElementById('callLogTierFilter')) document.getElementById('callLogTierFilter').value = 'ALL';
+      if (document.getElementById('callLogOutcomeFilter')) document.getElementById('callLogOutcomeFilter').value = 'ALL';
+      if (document.getElementById('callLogSearchInput')) document.getElementById('callLogSearchInput').value = '';
+      fetchCallLogsData();
+    }
+
     function fetchCallLogsData() {
       const dateVal = document.getElementById('callLogDatePicker').value;
       const userVal = document.getElementById('callLogUserPicker') ? document.getElementById('callLogUserPicker').value : 'ALL';
@@ -1446,7 +1505,7 @@
           loader.classList.add('hidden');
           if (res.success && res.logs) {
             currentCallLogsMaster = res.logs;
-            renderCallLogsTable(currentCallLogsMaster);
+            filterCallLogsTable();
           } else {
             currentCallLogsMaster = [];
             renderCallLogsTable([]);
@@ -1547,21 +1606,43 @@
     }
 
     function filterCallLogsTable() {
-      const q = (document.getElementById('callLogSearchInput').value || '').toLowerCase().trim();
-      if (!q) {
-        renderCallLogsTable(currentCallLogsMaster);
-        return;
+      const q = (document.getElementById('callLogSearchInput') ? document.getElementById('callLogSearchInput').value : '').toLowerCase().trim();
+      const sourceVal = document.getElementById('callLogSourceFilter') ? document.getElementById('callLogSourceFilter').value : 'ALL';
+      const tierVal = document.getElementById('callLogTierFilter') ? document.getElementById('callLogTierFilter').value : 'ALL';
+      const outcomeVal = document.getElementById('callLogOutcomeFilter') ? document.getElementById('callLogOutcomeFilter').value : 'ALL';
+
+      let filtered = currentCallLogsMaster;
+
+      if (sourceVal && sourceVal !== 'ALL') {
+        filtered = filtered.filter(item => (item.source || '').toLowerCase() === sourceVal.toLowerCase());
       }
 
-      const filtered = currentCallLogsMaster.filter(item => {
-        return (item.accountName || '').toLowerCase().includes(q) ||
-               (item.tier || '').toLowerCase().includes(q) ||
-               (item.phone || '').toLowerCase().includes(q) ||
-               (item.outcome || item.status || '').toLowerCase().includes(q) ||
-               (item.source || '').toLowerCase().includes(q) ||
-               (item.loggedUser || '').toLowerCase().includes(q) ||
-               (item.notes || '').toLowerCase().includes(q);
-      });
+      if (tierVal && tierVal !== 'ALL') {
+        filtered = filtered.filter(item => {
+          const itemTier = (item.tier || '').trim().toLowerCase();
+          if (tierVal === 'NO TIER') return !itemTier || itemTier === 'no tier';
+          return itemTier === tierVal.toLowerCase();
+        });
+      }
+
+      if (outcomeVal && outcomeVal !== 'ALL') {
+        filtered = filtered.filter(item => {
+          const itemOutcome = (item.outcome || item.status || '').toLowerCase();
+          return itemOutcome === outcomeVal.toLowerCase();
+        });
+      }
+
+      if (q) {
+        filtered = filtered.filter(item => {
+          return (item.accountName || '').toLowerCase().includes(q) ||
+                 (item.tier || '').toLowerCase().includes(q) ||
+                 (item.phone || '').toLowerCase().includes(q) ||
+                 (item.outcome || item.status || '').toLowerCase().includes(q) ||
+                 (item.source || '').toLowerCase().includes(q) ||
+                 (item.loggedUser || '').toLowerCase().includes(q) ||
+                 (item.notes || '').toLowerCase().includes(q);
+        });
+      }
 
       renderCallLogsTable(filtered);
     }
