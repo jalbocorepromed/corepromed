@@ -1051,6 +1051,12 @@ function getRowDataByNumber(row) {
 }
 
 function addNewLeadFromSidebar(data) {
+  // If an existing lead/row was selected from the dropdown, update it instead of creating a duplicate
+  if (data.row && parseInt(data.row, 10) > 1) {
+    const updateResult = updateLeadFromSidebar(data);
+    return { message: updateResult, rowNumber: parseInt(data.row, 10) };
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
