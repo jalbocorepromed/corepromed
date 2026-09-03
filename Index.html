@@ -1128,6 +1128,17 @@
           <input type="tel" id="tabCallPhone" required placeholder="Phone number..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
         </div>
 
+        <!-- NEW LEAD GENERATOR / LEAD DROPDOWN FIELD -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Lead Generator / Lead</label>
+          <select id="tabCallLead" class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none bg-white text-slate-800 font-medium shadow-2xs cursor-pointer">
+            <option value="">-- Select Lead --</option>
+            <option value="Miles">Miles</option>
+            <option value="Joan">Joan</option>
+            <option value="Jorell">Jorell</option>
+          </select>
+        </div>
+
         <div>
           <label id="tabCallDropdownLabel" class="block font-medium text-slate-600 mb-1">Status / Outcome</label>
           <select id="tabCallOutcomes" required class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none bg-white text-slate-800 font-medium shadow-2xs cursor-pointer"></select>
@@ -2696,6 +2707,7 @@
       document.getElementById('tabCallDate').value = record.callDate || record.dateLogged || new Date().toISOString().split('T')[0];
       document.getElementById('tabCallAccountName').value = record.accountName || '';
       document.getElementById('tabCallTier').value = record.tier || '';
+      document.getElementById('tabCallLead').value = record.leadGenerator || record.lead || '';
       document.getElementById('tabCallAddress').value = record.address || '';
       document.getElementById('tabCallCity').value = record.city || '';
       document.getElementById('tabCallCounty').value = record.county || '';
@@ -2755,6 +2767,7 @@
       document.getElementById('tabCallRowId').value = "";
       document.getElementById('tabCallDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('tabCallActiveTabSelect').value = tabKey;
+      document.getElementById('tabCallLead').value = "";
       document.getElementById('tabCallExistingNotes').innerText = 'No notes recorded yet.';
       document.getElementById('tabCallNotes').value = '';
 
@@ -2827,6 +2840,7 @@
         county: document.getElementById('tabCallCounty').value,
         zip: document.getElementById('tabCallZip').value,
         phone: document.getElementById('tabCallPhone').value,
+        leadGenerator: document.getElementById('tabCallLead').value,
         status: document.getElementById('tabCallOutcomes').value,
         outcome: document.getElementById('tabCallOutcomes').value,
         notes: document.getElementById('tabCallNotes').value

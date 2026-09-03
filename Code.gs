@@ -769,6 +769,9 @@ function getTabData(tabKey) {
 
       const tierKey = headers.find(h => h.toLowerCase().includes("tier"));
       const tierVal = tierKey ? recordData[tierKey] : "";
+      
+      const leadKey = headers.find(h => h.toLowerCase().includes("lead"));
+      const leadVal = leadKey ? recordData[leadKey] : "";
 
       records.push({
         row: i + 1,
@@ -776,6 +779,7 @@ function getTabData(tabKey) {
         callDate: callDateVal,
         accountName: recordData["Account Name"] || recordData["account name"] || recordData["Company Name"] || recordData["company name"] || recordData["Company"] || "",
         tier: tierVal,
+        leadGenerator: leadVal,
         address: recordData["Address"] || recordData["address"] || "",
         city: recordData["City"] || recordData["city"] || "",
         state: recordData["State"] || recordData["state"] || "",
@@ -817,7 +821,7 @@ function saveTabCallRecord(data) {
 
     if (!sheet) {
       sheet = ss.insertSheet(targetSheetName);
-      sheet.appendRow(["Date Logged", "Call Date", "Account Name", "Tier", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", statusColName, "Notes"]);
+      sheet.appendRow(["Date Logged", "Call Date", "Account Name", "Tier", "Lead Generator", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", statusColName, "Notes"]);
       sheet.getRange(1, 1, 1, sheet.getLastColumn()).setFontWeight("bold").setBackground("#F1F5F9");
     }
 
@@ -846,6 +850,8 @@ function saveTabCallRecord(data) {
       setColVal("account name", data.accountName || "");
       setColVal("company name", data.accountName || "");
       setColVal("tier", data.tier || "");
+      setColVal("lead generator", data.leadGenerator || "");
+      setColVal("lead", data.leadGenerator || "");
       setColVal("address", data.address || "");
       setColVal("city", data.city || "");
       setColVal("state", data.state || "");
@@ -868,6 +874,7 @@ function saveTabCallRecord(data) {
         callDateFormatted,
         data.accountName || "",
         data.tier || "",
+        data.leadGenerator || "",
         data.address || "",
         data.city || "",
         data.state || "",
@@ -931,6 +938,8 @@ function updateTabCallRecord(data) {
     updateCol("account name", data.accountName || "");
     updateCol("company name", data.accountName || "");
     updateCol("tier", data.tier || "");
+    updateCol("lead generator", data.leadGenerator || "");
+    updateCol("lead", data.leadGenerator || "");
     updateCol("address", data.address || "");
     updateCol("city", data.city || "");
     updateCol("state", data.state || "");
