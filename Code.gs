@@ -225,6 +225,7 @@ function getAllCallLogs(targetDate, targetUser) {
       const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("logged"));
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
+      const emailIdx = headers.findIndex(h => h.includes("email"));
       const tierIdx = headers.findIndex(h => h.includes("tier"));
       
       let colIdx = -1;
@@ -245,6 +246,7 @@ function getAllCallLogs(targetDate, targetUser) {
 
         let accountName = nameIdx >= 0 ? String(row[nameIdx] || "").trim() : "";
         let phone = phoneIdx >= 0 ? String(row[phoneIdx] || "").trim() : "";
+        let email = emailIdx >= 0 ? String(row[emailIdx] || "").trim() : "";
         let tier = tierIdx >= 0 ? String(row[tierIdx] || "").trim() : "";
         let outcome = colIdx >= 0 ? String(row[colIdx] || "").trim() : "";
         if (!outcome) {
@@ -297,6 +299,7 @@ function getAllCallLogs(targetDate, targetUser) {
                   accountName: accountName || "Unnamed Account",
                   tier: tier,
                   phone: phone || "-",
+                  email: email || "-",
                   status: matchedOutcome,
                   outcome: matchedOutcome,
                   loggedUser: logUser,
@@ -317,6 +320,7 @@ function getAllCallLogs(targetDate, targetUser) {
                 accountName: accountName || "Unnamed Account",
                 tier: tier,
                 phone: phone || "-",
+                email: email || "-",
                 status: outcome,
                 outcome: outcome,
                 loggedUser: "System/Admin",
@@ -335,6 +339,7 @@ function getAllCallLogs(targetDate, targetUser) {
               accountName: accountName || "Unnamed Account",
               tier: tier,
               phone: phone || "-",
+              email: email || "-",
               status: outcome,
               outcome: outcome,
               loggedUser: "System/Admin",
@@ -858,7 +863,9 @@ function saveTabCallRecord(data) {
       setColVal("county", data.county || "");
       setColVal("zip", data.zip || "");
       setColVal("phone number", data.phone || "");
+      setColVal("phone", data.phone || "");
       setColVal("email address", data.email || "");
+      setColVal("email", data.email || "");
       setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
 
       rawHeaders.forEach((h, idx) => {

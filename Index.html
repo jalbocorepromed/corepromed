@@ -505,7 +505,7 @@
         </div>
 
         <div class="flex items-center space-x-2 flex-1 min-w-[200px] max-w-sm">
-          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, phone, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
+          <input type="text" id="callLogSearchInput" onkeyup="filterCallLogsTable()" placeholder="Search account, email, phone, or notes..." class="w-full text-xs px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-2xs">
         </div>
 
       </div>
@@ -540,7 +540,7 @@
         </div>
 
         <div id="callLogsTableContainer" class="hidden border border-slate-200 rounded-lg min-w-max">
-          <table class="w-full text-left text-xs border-collapse min-w-[1000px]">
+          <table class="w-full text-left text-xs border-collapse min-w-[1150px]">
             <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200 sticky top-0 z-10 shadow-2xs">
               <tr>
                 <th class="p-3 w-[110px] shrink-0">Call Date</th>
@@ -578,6 +578,7 @@
                 </th>
 
                 <th class="p-3 w-[130px] shrink-0">Phone Number</th>
+                <th class="p-3 w-[150px] shrink-0">Email Address</th>
 
                 <!-- Outcome Column with Filter Icon -->
                 <th class="p-3 w-[140px] shrink-0">
@@ -1123,9 +1124,15 @@
           </div>
         </div>
 
-        <div>
-          <label class="block font-medium text-slate-600 mb-1">Phone Number</label>
-          <input type="tel" id="tabCallPhone" required placeholder="Phone number..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Phone Number</label>
+            <input type="tel" id="tabCallPhone" required placeholder="Phone number..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Email Address</label>
+            <input type="email" id="tabCallEmail" placeholder="Email address..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+          </div>
         </div>
 
         <!-- NEW LEAD GENERATOR / LEAD DROPDOWN FIELD -->
@@ -1190,6 +1197,10 @@
           <div class="flex justify-between border-b border-slate-200/60 pb-1">
             <span class="font-semibold text-slate-500">Phone Number:</span>
             <span id="detailPhone" class="font-mono text-slate-700"></span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200/60 pb-1">
+            <span class="font-semibold text-slate-500">Email Address:</span>
+            <span id="detailEmail" class="text-slate-700"></span>
           </div>
           <div class="flex justify-between border-b border-slate-200/60 pb-1">
             <span id="detailBadgeLabel" class="font-semibold text-slate-500">Status / Outcome:</span>
@@ -1570,6 +1581,7 @@
             ${item.tier ? `<span class="text-[9px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded shrink-0">${item.tier}</span>` : '-'}
           </td>
           <td class="p-3 font-mono text-slate-700 truncate w-[130px] shrink-0">${item.phone || '-'}</td>
+          <td class="p-3 text-[#1A75BC] font-medium truncate w-[150px] shrink-0">${item.email || '-'}</td>
           <td class="p-3 truncate w-[140px] shrink-0">
             <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(displayOutcome)}">
               ${displayOutcome}
@@ -1719,6 +1731,7 @@
           return (item.accountName || '').toLowerCase().includes(q) ||
                  (item.tier || '').toLowerCase().includes(q) ||
                  (item.phone || '').toLowerCase().includes(q) ||
+                 (item.email || '').toLowerCase().includes(q) ||
                  (item.outcome || item.status || '').toLowerCase().includes(q) ||
                  (item.source || '').toLowerCase().includes(q) ||
                  (item.loggedUser || '').toLowerCase().includes(q) ||
@@ -2713,6 +2726,7 @@
       document.getElementById('tabCallCounty').value = record.county || '';
       document.getElementById('tabCallZip').value = record.zip || '';
       document.getElementById('tabCallPhone').value = record.phone || '';
+      document.getElementById('tabCallEmail').value = record.email || '';
       document.getElementById('tabCallOutcomes').value = (tabKey === 'clientDirectory') ? (record.status || DEFAULT_STATUS) : (record.outcome || 'To Call');
       
       document.getElementById('tabCallExistingNotes').innerText = record.notes || 'No notes recorded yet.';
@@ -2727,6 +2741,7 @@
       document.getElementById('detailTier').innerText = record.tier || 'N/A';
       document.getElementById('detailDateLogged').innerText = record.callDate || record.dateLogged || 'N/A';
       document.getElementById('detailPhone').innerText = record.phone || 'N/A';
+      document.getElementById('detailEmail').innerText = record.email || 'N/A';
       document.getElementById('detailNotes').innerText = record.notes || 'No call notes available.';
 
       const badgeLabelElem = document.getElementById('detailBadgeLabel');
@@ -2768,6 +2783,7 @@
       document.getElementById('tabCallDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('tabCallActiveTabSelect').value = tabKey;
       document.getElementById('tabCallLead').value = "";
+      document.getElementById('tabCallEmail').value = "";
       document.getElementById('tabCallExistingNotes').innerText = 'No notes recorded yet.';
       document.getElementById('tabCallNotes').value = '';
 
@@ -2840,6 +2856,7 @@
         county: document.getElementById('tabCallCounty').value,
         zip: document.getElementById('tabCallZip').value,
         phone: document.getElementById('tabCallPhone').value,
+        email: document.getElementById('tabCallEmail').value,
         leadGenerator: document.getElementById('tabCallLead').value,
         status: document.getElementById('tabCallOutcomes').value,
         outcome: document.getElementById('tabCallOutcomes').value,
