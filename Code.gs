@@ -918,7 +918,7 @@ function updateTabCallRecord(data) {
 
     const updateCol = (headerName, val) => {
       const idx = rawHeaders.indexOf(headerName.toLowerCase());
-      if (idx >= 0) {
+      if (idx >= 0 && val !== undefined && val !== "") {
         sheet.getRange(row, idx + 1).setValue(val);
       }
     };
@@ -930,21 +930,21 @@ function updateTabCallRecord(data) {
       updateCol("last called date", callDateFormatted);
     }
 
-    updateCol("account name", data.accountName || "");
-    updateCol("company name", data.accountName || "");
-    updateCol("tier", data.tier || "");
-    updateCol("lead generator", data.leadGenerator || "");
-    updateCol("lead", data.leadGenerator || "");
-    updateCol("address", data.address || "");
-    updateCol("city", data.city || "");
-    updateCol("state", data.state || "");
-    updateCol("county", data.county || "");
-    updateCol("zip", data.zip || "");
-    updateCol("phone number", data.phone || "");
-    updateCol("phone", data.phone || "");
-    updateCol("email address", data.email || "");
-    updateCol("email", data.email || "");
-    updateCol("website", data.website || "");
+    updateCol("account name", data.accountName);
+    updateCol("company name", data.accountName);
+    updateCol("tier", data.tier);
+    updateCol("lead generator", data.leadGenerator);
+    updateCol("lead", data.leadGenerator);
+    updateCol("address", data.address);
+    updateCol("city", data.city);
+    updateCol("state", data.state);
+    updateCol("county", data.county);
+    updateCol("zip", data.zip);
+    updateCol("phone number", data.phone);
+    updateCol("phone", data.phone);
+    updateCol("email address", data.email);
+    updateCol("email", data.email);
+    updateCol("website", data.website);
     updateCol(statusColName.toLowerCase(), statusOrOutcomeVal);
 
     if (data.notes && data.notes.trim() !== "") {
@@ -1175,74 +1175,53 @@ function updateLeadFromSidebar(data) {
   const rawHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const headers = rawHeaders.map(h => String(h).trim().toLowerCase());
 
-  const dateCol = headers.indexOf(DATE_COLUMN_NAME.toLowerCase()) + 1;
-  const companyCol = headers.indexOf(COMPANY_COLUMN_NAME.toLowerCase()) + 1;
-  const dbaCol = headers.indexOf(DBA_COLUMN_NAME.toLowerCase()) + 1; 
-  const facilityTypeCol = headers.indexOf(FACILITY_TYPE_COLUMN_NAME.toLowerCase()) + 1;
-  const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase()) + 1;
-  const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase()) + 1;
-  const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase()) + 1;
-  const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase()) + 1;
-  const websiteCol = headers.indexOf(WEBSITE_COLUMN_NAME.toLowerCase()) + 1;
-  const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase()) + 1;
-
-  const lastCalledCol = headers.indexOf(LAST_CALLED_COLUMN_NAME.toLowerCase()) + 1;
-  const callCountCol = headers.indexOf(CALL_COUNT_COLUMN_NAME.toLowerCase()) + 1;
-  const recentNotesCol = headers.indexOf(RECENT_NOTES_COLUMN_NAME.toLowerCase()) + 1;
-  const historyCol = headers.indexOf(HISTORY_COLUMN_NAME.toLowerCase()) + 1;
-
-  const corporateCol = headers.indexOf(CORPORATE_COLUMN_NAME.toLowerCase()) + 1;
-  const leadGeneratorCol = headers.indexOf(LEAD_GENERATOR_COLUMN_NAME.toLowerCase()) + 1;
-  const accountOwnerCol = headers.indexOf(ACCOUNT_OWNER_COLUMN_NAME.toLowerCase()) + 1; 
-  const adminNameCol = headers.indexOf(ADMIN_NAME_COLUMN_NAME.toLowerCase()) + 1;
-  const contactNameCol = headers.indexOf(CONTACT_NAME_COLUMN_NAME.toLowerCase()) + 1;
-  const contactTitleCol = headers.indexOf(CONTACT_TITLE_COLUMN_NAME.toLowerCase()) + 1;
-  const contactEmailCol = headers.indexOf(CONTACT_EMAIL_COLUMN_NAME.toLowerCase()) + 1;
-  const contactPhoneCol = headers.indexOf(CONTACT_PHONE_COLUMN_NAME.toLowerCase()) + 1;
-  const centralSupplyCol = headers.indexOf(CENTRAL_SUPPLY_COLUMN_NAME.toLowerCase()) + 1;
-  const patientSupplyCol = headers.indexOf(PATIENT_SUPPLY_COLUMN_NAME.toLowerCase()) + 1;
-  const partBBillingCol = headers.indexOf(PART_B_BILLING_COLUMN_NAME.toLowerCase()) + 1;
-  const hmoBillingCol = headers.indexOf(HMO_BILLING_COLUMN_NAME.toLowerCase()) + 1;
-  const cityCol = headers.indexOf(CITY_COLUMN_NAME.toLowerCase()) + 1;
-  const stateCol = headers.indexOf(STATE_COLUMN_NAME.toLowerCase()) + 1;
-  const zipCol = headers.indexOf(ZIP_COLUMN_NAME.toLowerCase()) + 1;
+  const updateCol = (headerName, val) => {
+    const idx = headers.indexOf(headerName.toLowerCase());
+    if (idx >= 0 && val !== undefined && val !== "") {
+      sheet.getRange(row, idx + 1).setValue(val);
+    }
+  };
 
   const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a");
   const callDateFormatted = data.callDate || data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   const currentUser = extractCleanUserName(data.user || getActiveCRMUser());
   const currentStatusVal = data.status || DEFAULT_STATUS;
 
-  if (dateCol > 0 && callDateFormatted) {
+  if (callDateFormatted) {
     const parts = callDateFormatted.split('-');
     if(parts.length === 3) {
-      sheet.getRange(row, dateCol).setValue(new Date(parts[0], parts[1] - 1, parts[2]));
+      updateCol(DATE_COLUMN_NAME, new Date(parts[0], parts[1] - 1, parts[2]));
     }
   }
-  if (companyCol > 0) sheet.getRange(row, companyCol).setValue(data.company || "");
-  if (dbaCol > 0) sheet.getRange(row, dbaCol).setValue(data.dba || ""); 
-  if (facilityTypeCol > 0) sheet.getRange(row, facilityTypeCol).setValue(data.facilityType || "");
-  if (tierCol > 0) sheet.getRange(row, tierCol).setValue(data.tier || "");
-  if (addressCol > 0) sheet.getRange(row, addressCol).setValue(data.address || "");
-  if (emailCol > 0) sheet.getRange(row, emailCol).setValue(data.email || "");
-  if (phoneCol > 0) sheet.getRange(row, phoneCol).setValue(data.phone || "");
-  if (websiteCol > 0) sheet.getRange(row, websiteCol).setValue(data.website || "");
 
-  if (corporateCol > 0) sheet.getRange(row, corporateCol).setValue(data.corporate || "");
-  if (leadGeneratorCol > 0) sheet.getRange(row, leadGeneratorCol).setValue(data.leadGenerator || "");
-  if (accountOwnerCol > 0) sheet.getRange(row, accountOwnerCol).setValue(data.accountOwner || ""); 
-  if (adminNameCol > 0) sheet.getRange(row, adminNameCol).setValue(data.adminName || "");
-  if (contactNameCol > 0) sheet.getRange(row, contactNameCol).setValue(data.contactName || "");
-  if (contactTitleCol > 0) sheet.getRange(row, contactTitleCol).setValue(data.contactTitle || ""); 
-  if (contactEmailCol > 0) sheet.getRange(row, contactEmailCol).setValue(data.contactEmail || "");
-  if (contactPhoneCol > 0) sheet.getRange(row, contactPhoneCol).setValue(data.contactPhone || "");
-  if (centralSupplyCol > 0) sheet.getRange(row, centralSupplyCol).setValue(data.centralSupply || false);
-  if (patientSupplyCol > 0) sheet.getRange(row, patientSupplyCol).setValue(data.patientSupply || false);
-  if (partBBillingCol > 0) sheet.getRange(row, partBBillingCol).setValue(data.partBBilling || false);
-  if (hmoBillingCol > 0) sheet.getRange(row, hmoBillingCol).setValue(data.hmoBilling || false);
-  if (cityCol > 0) sheet.getRange(row, cityCol).setValue(data.city || "");
-  if (stateCol > 0) sheet.getRange(row, stateCol).setValue(data.state || "");
-  if (zipCol > 0) sheet.getRange(row, zipCol).setValue(data.zip || "");
+  updateCol(COMPANY_COLUMN_NAME, data.company);
+  updateCol(DBA_COLUMN_NAME, data.dba); 
+  updateCol(FACILITY_TYPE_COLUMN_NAME, data.facilityType);
+  updateCol(TIER_COLUMN_NAME, data.tier);
+  updateCol(ADDRESS_COLUMN_NAME, data.address);
+  updateCol(EMAIL_COLUMN_NAME, data.email);
+  updateCol(PHONE_COLUMN_NAME, data.phone);
+  updateCol(WEBSITE_COLUMN_NAME, data.website);
 
+  updateCol(CORPORATE_COLUMN_NAME, data.corporate);
+  updateCol(LEAD_GENERATOR_COLUMN_NAME, data.leadGenerator);
+  updateCol(ACCOUNT_OWNER_COLUMN_NAME, data.accountOwner); 
+  updateCol(ADMIN_NAME_COLUMN_NAME, data.adminName);
+  updateCol(CONTACT_NAME_COLUMN_NAME, data.contactName);
+  updateCol(CONTACT_TITLE_COLUMN_NAME, data.contactTitle); 
+  updateCol(CONTACT_EMAIL_COLUMN_NAME, data.contactEmail);
+  updateCol(CONTACT_PHONE_COLUMN_NAME, data.contactPhone);
+  
+  if (data.centralSupply !== undefined) updateCol(CENTRAL_SUPPLY_COLUMN_NAME, data.centralSupply);
+  if (data.patientSupply !== undefined) updateCol(PATIENT_SUPPLY_COLUMN_NAME, data.patientSupply);
+  if (data.partBBilling !== undefined) updateCol(PART_B_BILLING_COLUMN_NAME, data.partBBilling);
+  if (data.hmoBilling !== undefined) updateCol(HMO_BILLING_COLUMN_NAME, data.hmoBilling);
+  
+  updateCol(CITY_COLUMN_NAME, data.city);
+  updateCol(STATE_COLUMN_NAME, data.state);
+  updateCol(ZIP_COLUMN_NAME, data.zip);
+
+  const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase()) + 1;
   if (statusCol > 0 && data.status) {
     const rule = SpreadsheetApp.newDataValidation().requireValueInList(STATUSES, true).setAllowInvalid(false).build();
     sheet.getRange(row, statusCol).setDataValidation(rule);
@@ -1252,6 +1231,11 @@ function updateLeadFromSidebar(data) {
 
   if (data.note && data.note.trim() !== "") {
     const formattedNote = `[Call Date: ${callDateFormatted} | ${timestamp} - ${currentUser} | Outcome: ${currentStatusVal}]: ${data.note.trim()}`;
+    const lastCalledCol = headers.indexOf(LAST_CALLED_COLUMN_NAME.toLowerCase()) + 1;
+    const callCountCol = headers.indexOf(CALL_COUNT_COLUMN_NAME.toLowerCase()) + 1;
+    const recentNotesCol = headers.indexOf(RECENT_NOTES_COLUMN_NAME.toLowerCase()) + 1;
+    const historyCol = headers.indexOf(HISTORY_COLUMN_NAME.toLowerCase()) + 1;
+
     if (lastCalledCol > 0) sheet.getRange(row, lastCalledCol).setValue(new Date());
     if (callCountCol > 0) {
       const currentCountCell = sheet.getRange(row, callCountCol);
