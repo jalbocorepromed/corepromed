@@ -26,7 +26,6 @@ const DBA_COLUMN_NAME = "DBA";
 const FACILITY_TYPE_COLUMN_NAME = "Facility Type";
 const ADDRESS_COLUMN_NAME = "Address"; 
 const EMAIL_COLUMN_NAME = "Email Address";
-const WEBSITE_COLUMN_NAME = "Website";
 const PHONE_COLUMN_NAME = "Phone Number";
 const TIER_COLUMN_NAME = "Tier";
 
@@ -107,6 +106,9 @@ function getCurrentUserInfo() {
   };
 }
 
+/**
+ * Extracts JUST the user name from formatted meta text or email strings.
+ */
 function extractCleanUserName(rawUserStr) {
   if (!rawUserStr) return "System/Admin";
   let clean = String(rawUserStr).trim();
@@ -128,6 +130,9 @@ function extractCleanUserName(rawUserStr) {
   return clean || "System/Admin";
 }
 
+/**
+ * Helper function to parse/format any raw Date object or string into YYYY-MM-DD
+ */
 function formatDateToYYYYMMDD(rawDate) {
   if (!rawDate) return "";
   if (rawDate instanceof Date) {
@@ -142,12 +147,18 @@ function formatDateToYYYYMMDD(rawDate) {
   return dateMatch ? dateMatch[0] : str;
 }
 
+/**
+ * Extract Call Date embedded inside formatted notes: [Call Date: YYYY-MM-DD | ...]
+ */
 function extractLatestCallDateFromNotes(notesText) {
   if (!notesText) return "";
   const match = String(notesText).match(/\[Call Date:\s*(\d{4}-\d{2}-\d{2})/i);
   return match ? match[1] : "";
 }
 
+/**
+ * Fetches all unique users who have logged calls across sheets.
+ */
 function getAllCRMUsers() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -186,6 +197,9 @@ function getAllCRMUsers() {
   }
 }
 
+/**
+ * Fetches call logs with optional targetDate AND targetUser filtering.
+ */
 function getAllCallLogs(targetDate, targetUser) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -212,7 +226,6 @@ function getAllCallLogs(targetDate, targetUser) {
       const nameIdx = headers.findIndex(h => h.includes("company") || h.includes("account") || h.includes("lead"));
       const phoneIdx = headers.findIndex(h => h.includes("phone"));
       const emailIdx = headers.findIndex(h => h.includes("email"));
-      const websiteIdx = headers.findIndex(h => h.includes("website") || h.includes("site") || h.includes("url"));
       const tierIdx = headers.findIndex(h => h.includes("tier"));
       
       let colIdx = -1;
@@ -234,7 +247,6 @@ function getAllCallLogs(targetDate, targetUser) {
         let accountName = nameIdx >= 0 ? String(row[nameIdx] || "").trim() : "";
         let phone = phoneIdx >= 0 ? String(row[phoneIdx] || "").trim() : "";
         let email = emailIdx >= 0 ? String(row[emailIdx] || "").trim() : "";
-        let website = websiteIdx >= 0 ? String(row[websiteIdx] || "").trim() : "";
         let tier = tierIdx >= 0 ? String(row[tierIdx] || "").trim() : "";
         let outcome = colIdx >= 0 ? String(row[colIdx] || "").trim() : "";
         if (!outcome) {
@@ -245,6 +257,7 @@ function getAllCallLogs(targetDate, targetUser) {
 
         let rawDate = dateIdx >= 0 ? row[dateIdx] : "";
         let formattedDate = formatDateToYYYYMMDD(rawDate);
+
         let notesText = notesIdx >= 0 ? String(row[notesIdx] || "").trim() : "";
 
         if (notesText) {
@@ -287,7 +300,6 @@ function getAllCallLogs(targetDate, targetUser) {
                   tier: tier,
                   phone: phone || "-",
                   email: email || "-",
-                  website: website || "-",
                   status: matchedOutcome,
                   outcome: matchedOutcome,
                   loggedUser: logUser,
@@ -309,7 +321,6 @@ function getAllCallLogs(targetDate, targetUser) {
                 tier: tier,
                 phone: phone || "-",
                 email: email || "-",
-                website: website || "-",
                 status: outcome,
                 outcome: outcome,
                 loggedUser: "System/Admin",
@@ -329,7 +340,6 @@ function getAllCallLogs(targetDate, targetUser) {
               tier: tier,
               phone: phone || "-",
               email: email || "-",
-              website: website || "-",
               status: outcome,
               outcome: outcome,
               loggedUser: "System/Admin",
@@ -511,6 +521,9 @@ function getCallTractionMetrics() {
   }
 }
 
+/**
+ * Fetches daily call breakdown strictly filtered by targetUser if specified.
+ */
 function getDailyCallBreakdown(targetUser) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -629,7 +642,6 @@ function getAllCompaniesData() {
     const facilityTypeCol = headers.indexOf(FACILITY_TYPE_COLUMN_NAME.toLowerCase());
     const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase());
     const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase());
-    const websiteCol = headers.findIndex(h => h.includes("website") || h.includes("site") || h.includes("url"));
     const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase());
     const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase());
     const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase());
@@ -672,7 +684,6 @@ function getAllCompaniesData() {
         tier: (tierCol >= 0 && tierCol < rowArr.length) ? String(rowArr[tierCol]).trim() : "",
         address: (addressCol >= 0 && addressCol < rowArr.length) ? String(rowArr[addressCol]).trim() : "",
         email: (emailCol >= 0 && emailCol < rowArr.length) ? String(rowArr[emailCol]).trim() : "",
-        website: (websiteCol >= 0 && websiteCol < rowArr.length) ? String(rowArr[websiteCol]).trim() : "",
         phone: (phoneCol >= 0 && phoneCol < rowArr.length) ? String(rowArr[phoneCol]).trim() : "",
         currentStatus: currentStatus,
 
@@ -767,9 +778,6 @@ function getTabData(tabKey) {
       const leadKey = headers.find(h => h.toLowerCase().includes("lead"));
       const leadVal = leadKey ? recordData[leadKey] : "";
 
-      const websiteKey = headers.find(h => h.toLowerCase().includes("website") || h.toLowerCase().includes("site") || h.toLowerCase().includes("url"));
-      const websiteVal = websiteKey ? recordData[websiteKey] : "";
-
       records.push({
         row: i + 1,
         dateLogged: baseFormattedDate,
@@ -784,7 +792,6 @@ function getTabData(tabKey) {
         zip: recordData["Zip"] || recordData["zip"] || recordData["Zip Code"] || "",
         phone: recordData["Phone Number"] || recordData["phone number"] || recordData["Phone"] || "",
         email: recordData["Email Address"] || recordData["email address"] || recordData["Email"] || recordData["email"] || "",
-        website: websiteVal,
         status: statusVal,
         outcome: outcomeVal,
         notes: notesVal,
@@ -819,7 +826,7 @@ function saveTabCallRecord(data) {
 
     if (!sheet) {
       sheet = ss.insertSheet(targetSheetName);
-      sheet.appendRow(["Date Logged", "Call Date", "Account Name", "Tier", "Lead Generator", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", "Website", statusColName, "Notes"]);
+      sheet.appendRow(["Date Logged", "Call Date", "Account Name", "Tier", "Lead Generator", "Address", "City", "State", "County", "Zip", "Phone Number", "Email Address", statusColName, "Notes"]);
       sheet.getRange(1, 1, 1, sheet.getLastColumn()).setFontWeight("bold").setBackground("#F1F5F9");
     }
 
@@ -856,8 +863,9 @@ function saveTabCallRecord(data) {
       setColVal("county", data.county || "");
       setColVal("zip", data.zip || "");
       setColVal("phone number", data.phone || "");
+      setColVal("phone", data.phone || "");
       setColVal("email address", data.email || "");
-      setColVal("website", data.website || "");
+      setColVal("email", data.email || "");
       setColVal(statusColName.toLowerCase(), statusOrOutcomeVal);
 
       rawHeaders.forEach((h, idx) => {
@@ -881,7 +889,6 @@ function saveTabCallRecord(data) {
         data.zip || "",
         data.phone || "",
         data.email || "",
-        data.website || "",
         statusOrOutcomeVal,
         formattedNotes
       ]);
@@ -949,7 +956,6 @@ function updateTabCallRecord(data) {
     updateCol("phone", data.phone || "");
     updateCol("email address", data.email || "");
     updateCol("email", data.email || "");
-    updateCol("website", data.website || "");
     updateCol(statusColName.toLowerCase(), statusOrOutcomeVal);
 
     if (data.notes && data.notes.trim() !== "") {
@@ -994,7 +1000,6 @@ function getRowDataByNumber(row) {
     const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase()) + 1;
     const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase()) + 1;
     const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase()) + 1;
-    const websiteCol = headers.findIndex(h => h.includes("website") || h.includes("site") || h.includes("url")) + 1;
     const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase()) + 1;
     const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase()) + 1;
     const recentNotesCol = headers.indexOf(RECENT_NOTES_COLUMN_NAME.toLowerCase()) + 1;
@@ -1035,7 +1040,6 @@ function getRowDataByNumber(row) {
       tier: tierCol > 0 ? String(sheet.getRange(row, tierCol).getValue()).trim() : "",
       address: addressCol > 0 ? String(sheet.getRange(row, addressCol).getValue()).trim() : "",
       email: emailCol > 0 ? String(sheet.getRange(row, emailCol).getValue()).trim() : "",
-      website: websiteCol > 0 ? String(sheet.getRange(row, websiteCol).getValue()).trim() : "",
       phone: phoneCol > 0 ? String(sheet.getRange(row, phoneCol).getValue()).trim() : "",
       currentStatus: currentStatus,
       recentNotes: recentNotesCol > 0 ? String(sheet.getRange(row, recentNotesCol).getValue()).trim() : "",
@@ -1063,6 +1067,7 @@ function getRowDataByNumber(row) {
 }
 
 function addNewLeadFromSidebar(data) {
+  // If an existing lead/row was selected from the dropdown, update it instead of creating a duplicate
   if (data.row && parseInt(data.row, 10) > 1) {
     const updateResult = updateLeadFromSidebar(data);
     return { message: updateResult, rowNumber: parseInt(data.row, 10) };
@@ -1086,7 +1091,6 @@ function addNewLeadFromSidebar(data) {
   const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase());
   const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase());
   const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase());
-  const websiteCol = headers.findIndex(h => h.includes("website") || h.includes("site") || h.includes("url"));
   const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase());
   const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase());
   const recentNotesCol = headers.indexOf(RECENT_NOTES_COLUMN_NAME.toLowerCase());
@@ -1130,7 +1134,6 @@ function addNewLeadFromSidebar(data) {
   if (tierCol >= 0) newRowData[tierCol] = data.tier || "";
   if (addressCol >= 0) newRowData[addressCol] = data.address || "";
   if (emailCol >= 0) newRowData[emailCol] = data.email || "";
-  if (websiteCol >= 0) newRowData[websiteCol] = data.website || "";
   if (phoneCol >= 0) newRowData[phoneCol] = data.phone || "";
   if (statusCol >= 0) newRowData[statusCol] = currentStatusVal;
 
@@ -1187,7 +1190,6 @@ function updateLeadFromSidebar(data) {
   const tierCol = headers.indexOf(TIER_COLUMN_NAME.toLowerCase()) + 1;
   const addressCol = headers.indexOf(ADDRESS_COLUMN_NAME.toLowerCase()) + 1;
   const emailCol = headers.indexOf(EMAIL_COLUMN_NAME.toLowerCase()) + 1;
-  const websiteCol = headers.findIndex(h => h.includes("website") || h.includes("site") || h.includes("url")) + 1;
   const phoneCol = headers.indexOf(PHONE_COLUMN_NAME.toLowerCase()) + 1;
   const statusCol = headers.indexOf(STATUS_COLUMN_NAME.toLowerCase()) + 1;
 
@@ -1229,7 +1231,6 @@ function updateLeadFromSidebar(data) {
   if (tierCol > 0) sheet.getRange(row, tierCol).setValue(data.tier || "");
   if (addressCol > 0) sheet.getRange(row, addressCol).setValue(data.address || "");
   if (emailCol > 0) sheet.getRange(row, emailCol).setValue(data.email || "");
-  if (websiteCol > 0) sheet.getRange(row, websiteCol).setValue(data.website || "");
   if (phoneCol > 0) sheet.getRange(row, phoneCol).setValue(data.phone || "");
 
   if (corporateCol > 0) sheet.getRange(row, corporateCol).setValue(data.corporate || "");
@@ -1363,8 +1364,7 @@ function setupCRM() {
       CITY_COLUMN_NAME,
       STATE_COLUMN_NAME,
       ZIP_COLUMN_NAME,
-      EMAIL_COLUMN_NAME,
-      WEBSITE_COLUMN_NAME,
+      EMAIL_COLUMN_NAME, 
       PHONE_COLUMN_NAME, 
       STATUS_COLUMN_NAME, 
       LAST_CALLED_COLUMN_NAME, 
