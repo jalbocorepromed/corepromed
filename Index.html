@@ -171,6 +171,7 @@
                 <div class="w-[160px] shrink-0">Address</div>
                 <div class="w-[150px] shrink-0">Email Address</div>
                 <div class="w-[125px] shrink-0">Phone Number</div>
+                <div class="w-[140px] shrink-0">Website</div>
                 <div class="w-[140px] shrink-0 text-center">Status</div>
                 <div class="w-[70px] shrink-0 text-center pr-2">Actions</div>
               </div>
@@ -776,7 +777,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
               <label class="block font-medium text-slate-600 mb-1">Phone Number</label>
               <input type="tel" id="editModalPhone" class="w-full border border-slate-200 p-1.5 text-xs rounded-md focus:border-amber-600 focus:outline-none bg-white text-slate-800">
@@ -784,6 +785,10 @@
             <div>
               <label class="block font-medium text-slate-600 mb-1">Email Address</label>
               <input type="email" id="editModalEmail" class="w-full border border-slate-200 p-1.5 text-xs rounded-md focus:border-amber-600 focus:outline-none bg-white text-slate-800">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-1">Company Website</label>
+              <input type="url" id="editModalWebsite" placeholder="https://example.com" class="w-full border border-slate-200 p-1.5 text-xs rounded-md focus:border-amber-600 focus:outline-none bg-white text-slate-800">
             </div>
           </div>
 
@@ -992,6 +997,11 @@
           <input type="email" id="entryEmail" placeholder="Enter principal email point..." class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
         </div>
 
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Company Website</label>
+          <input type="url" id="entryWebsite" placeholder="https://example.com" class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+        </div>
+
         <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
           <label class="block font-bold text-slate-700 mb-2 tracking-wide uppercase text-[10px]">Supply & Billing Modules</label>
           <div class="grid grid-cols-2 gap-2">
@@ -1135,6 +1145,11 @@
           </div>
         </div>
 
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Company Website</label>
+          <input type="url" id="tabCallWebsite" placeholder="https://example.com" class="w-full border border-slate-200 p-2 rounded-md focus:border-[#1A75BC] focus:outline-none text-slate-800 placeholder-slate-300 shadow-2xs">
+        </div>
+
         <!-- NEW LEAD GENERATOR / LEAD DROPDOWN FIELD -->
         <div>
           <label class="block font-medium text-slate-600 mb-1">Lead Generator / Lead</label>
@@ -1201,6 +1216,10 @@
           <div class="flex justify-between border-b border-slate-200/60 pb-1">
             <span class="font-semibold text-slate-500">Email Address:</span>
             <span id="detailEmail" class="text-slate-700"></span>
+          </div>
+          <div class="flex justify-between border-b border-slate-200/60 pb-1">
+            <span class="font-semibold text-slate-500">Website:</span>
+            <span id="detailWebsite" class="text-[#1A75BC]"></span>
           </div>
           <div class="flex justify-between border-b border-slate-200/60 pb-1">
             <span id="detailBadgeLabel" class="font-semibold text-slate-500">Status / Outcome:</span>
@@ -2069,6 +2088,7 @@
               ${locationStr ? `<span>📍 ${locationStr}</span>` : ''}
               ${rec.phone ? `<span>📞 ${rec.phone}</span>` : ''}
               ${rec.email ? `<span>✉️ ${rec.email}</span>` : ''}
+              ${rec.website ? `<span>🌐 ${rec.website}</span>` : ''}
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -2096,6 +2116,7 @@
       document.getElementById('editModalZip').value = record.zip || '';
       document.getElementById('editModalPhone').value = record.phone || '';
       document.getElementById('editModalEmail').value = record.email || '';
+      document.getElementById('editModalWebsite').value = record.website || '';
       
       document.getElementById('editModalExistingNotes').innerText = record.notes || 'No notes logged yet.';
       document.getElementById('editModalNotes').value = '';
@@ -2149,6 +2170,7 @@
         zip: document.getElementById('editModalZip').value,
         phone: document.getElementById('editModalPhone').value,
         email: document.getElementById('editModalEmail').value,
+        website: document.getElementById('editModalWebsite').value,
         status: document.getElementById('editModalOutcomes').value,
         outcome: document.getElementById('editModalOutcomes').value,
         notes: document.getElementById('editModalNotes').value
@@ -2516,7 +2538,7 @@
         };
       } 
 
-      if (lower.includes('email')) {
+      if (lower.includes('email') || lower.includes('website') || lower.includes('url')) {
         return {
           headerClass: "w-[150px] min-w-[150px] shrink-0 px-1.5 truncate font-bold flex items-center justify-between gap-1 group",
           cellClass: "w-[150px] min-w-[150px] shrink-0 px-1.5 text-[#1A75BC] font-medium truncate"
@@ -2683,6 +2705,13 @@
 
           if (lowerColName === "status" || lowerColName === "outcome") {
             colCell.innerHTML = `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md ${assignedOutcomeBadgeStyle(cellVal)}">${cellVal || '-'}</span>`;
+          } else if (lowerColName.includes("website") || lowerColName.includes("url")) {
+            if (cellVal && cellVal !== "-") {
+              const urlFormatted = cellVal.startsWith("http") ? cellVal : `https://${cellVal}`;
+              colCell.innerHTML = `<a href="${urlFormatted}" target="_blank" class="hover:underline text-[#1A75BC] font-medium truncate block">${cellVal}</a>`;
+            } else {
+              colCell.innerText = "-";
+            }
           } else if (lowerColName.includes("account") || lowerColName.includes("company") || lowerColName.includes("name")) {
             colCell.innerHTML = `<span class="hover:underline text-[#1A75BC] cursor-pointer">${cellVal || '-'}</span>`;
             colCell.onclick = (e) => {
@@ -2727,6 +2756,7 @@
       document.getElementById('tabCallZip').value = record.zip || '';
       document.getElementById('tabCallPhone').value = record.phone || '';
       document.getElementById('tabCallEmail').value = record.email || '';
+      document.getElementById('tabCallWebsite').value = record.website || '';
       document.getElementById('tabCallOutcomes').value = (tabKey === 'clientDirectory') ? (record.status || DEFAULT_STATUS) : (record.outcome || 'To Call');
       
       document.getElementById('tabCallExistingNotes').innerText = record.notes || 'No notes recorded yet.';
@@ -2742,6 +2772,15 @@
       document.getElementById('detailDateLogged').innerText = record.callDate || record.dateLogged || 'N/A';
       document.getElementById('detailPhone').innerText = record.phone || 'N/A';
       document.getElementById('detailEmail').innerText = record.email || 'N/A';
+      
+      const websiteVal = record.website || 'N/A';
+      if (websiteVal !== 'N/A' && websiteVal !== '') {
+        const targetUrl = websiteVal.startsWith('http') ? websiteVal : `https://${websiteVal}`;
+        document.getElementById('detailWebsite').innerHTML = `<a href="${targetUrl}" target="_blank" class="hover:underline text-[#1A75BC] font-medium">${websiteVal}</a>`;
+      } else {
+        document.getElementById('detailWebsite').innerText = 'N/A';
+      }
+
       document.getElementById('detailNotes').innerText = record.notes || 'No call notes available.';
 
       const badgeLabelElem = document.getElementById('detailBadgeLabel');
@@ -2784,6 +2823,7 @@
       document.getElementById('tabCallActiveTabSelect').value = tabKey;
       document.getElementById('tabCallLead').value = "";
       document.getElementById('tabCallEmail').value = "";
+      document.getElementById('tabCallWebsite').value = "";
       document.getElementById('tabCallExistingNotes').innerText = 'No notes recorded yet.';
       document.getElementById('tabCallNotes').value = '';
 
@@ -2857,6 +2897,7 @@
         zip: document.getElementById('tabCallZip').value,
         phone: document.getElementById('tabCallPhone').value,
         email: document.getElementById('tabCallEmail').value,
+        website: document.getElementById('tabCallWebsite').value,
         leadGenerator: document.getElementById('tabCallLead').value,
         status: document.getElementById('tabCallOutcomes').value,
         outcome: document.getElementById('tabCallOutcomes').value,
@@ -3442,7 +3483,12 @@
         }
         if (!fullAddress) fullAddress = '-';
 
-        tableRowElement.setAttribute('data-search-index', `${companyRowItem.callDate || companyRowItem.date || ''} ${companyRowItem.company} ${companyRowItem.tier || ''} ${companyRowItem.dba || ''} ${companyRowItem.corporate || ''} ${companyRowItem.leadGenerator || ''} ${companyRowItem.accountOwner || ''} ${companyRowItem.facilityType} ${companyRowItem.phone} ${companyRowItem.currentStatus} ${companyRowItem.email} ${fullAddress}`.toLowerCase());
+        const websiteVal = companyRowItem.website || '-';
+        const websiteLink = (websiteVal && websiteVal !== '-') 
+          ? `<a href="${websiteVal.startsWith('http') ? websiteVal : 'https://' + websiteVal}" target="_blank" class="text-[#1A75BC] underline truncate block">${websiteVal}</a>`
+          : '-';
+
+        tableRowElement.setAttribute('data-search-index', `${companyRowItem.callDate || companyRowItem.date || ''} ${companyRowItem.company} ${companyRowItem.tier || ''} ${companyRowItem.dba || ''} ${companyRowItem.corporate || ''} ${companyRowItem.leadGenerator || ''} ${companyRowItem.accountOwner || ''} ${companyRowItem.facilityType} ${companyRowItem.phone} ${companyRowItem.website || ''} ${companyRowItem.currentStatus} ${companyRowItem.email} ${fullAddress}`.toLowerCase());
 
         tableRowElement.innerHTML = `
           <div class="w-[90px] shrink-0 pl-2 font-medium text-slate-500 font-mono truncate">${companyRowItem.callDate || companyRowItem.date || '-'}</div>
@@ -3456,6 +3502,7 @@
           <div class="w-[160px] shrink-0 min-w-0 text-slate-500 truncate" title="${fullAddress}">${fullAddress}</div>
           <div class="w-[150px] shrink-0 min-w-0 text-[#1A75BC] font-medium truncate">${companyRowItem.email || '-'}</div>
           <div class="w-[125px] shrink-0 font-mono truncate">${companyRowItem.phone || '-'}</div>
+          <div class="w-[140px] shrink-0 truncate">${websiteLink}</div>
           <div class="w-[140px] shrink-0 text-center truncate px-1">
             <span class="inline-block text-[10px] font-semibold tracking-wide uppercase px-2 py-1 rounded-md ${assignedBadgeStyleScheme(companyRowItem.currentStatus)}">
               ${companyRowItem.currentStatus || DEFAULT_STATUS}
@@ -3513,6 +3560,7 @@
           document.getElementById('entryFacilityType').value = res.facilityType || "";
           document.getElementById('entryPhone').value = res.phone || "";
           document.getElementById('entryEmail').value = res.email || "";
+          document.getElementById('entryWebsite').value = res.website || "";
           document.getElementById('entryAddress').value = res.address || "";
 
           document.getElementById('entryCorporate').value = res.corporate || "";
@@ -3580,6 +3628,7 @@
       document.getElementById('entryDba').value = ""; 
       document.getElementById('entryLeadGenerator').value = "";
       document.getElementById('entryAccountOwner').value = ""; 
+      document.getElementById('entryWebsite').value = "";
 
       document.getElementById('chkCentralSupply').checked = false;
       document.getElementById('chkPatientSupply').checked = false;
@@ -3605,6 +3654,7 @@
         facilityType: document.getElementById('entryFacilityType').value,
         phone: document.getElementById('entryPhone').value,
         email: document.getElementById('entryEmail').value,
+        website: document.getElementById('entryWebsite').value,
         address: document.getElementById('entryAddress').value,
         note: document.getElementById('entryNote').value,
 
