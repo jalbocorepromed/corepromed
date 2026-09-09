@@ -60,7 +60,8 @@ const STATUSES = [
   "Paused",
   "Past Client",
   "Pending",
-  "Wrong Number"
+  "Wrong Number",
+  "Sent to Jorell"
 ];
 
 const CALL_OUTCOMES = [
@@ -75,7 +76,8 @@ const CALL_OUTCOMES = [
   "Supply Audit",
   "Email sent",
   "Pending",
-  "Wrong Number"
+  "Wrong Number",
+  "Sent to Jorell"
 ];
 
 const DEFAULT_STATUS = "Potential Lead / Attempting Contact";
@@ -1305,6 +1307,9 @@ function colorCodeRow(sheet, row, status) {
     case "Past Client":
     case "Wrong Number":
       backgroundColor = "#A2C7E3"; 
+      break;
+    case "Sent to Jorell":
+      backgroundColor = "#E0E7FF"; // Soft Indigo/Blue highlight
       break;
   }
 
