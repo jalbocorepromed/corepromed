@@ -415,6 +415,68 @@ function getExportSchemaAndData() {
   }
 }
 
+/**
+ * Sends formatted CRM data via email with attached CSV files for selected tabs.
+ */
+function sendCRMDataEmail(recipientEmail, selectedTabs) {
+  try {
+    if (!recipientEmail || !recipientEmail.includes("@")) {
+      return { success: false, error: "Please enter a valid email address." };
+    }
+
+    const schemaResponse = getExportSchemaAndData();
+    if (!schemaResponse.success) {
+      return { success: false, error: schemaResponse.error };
+    }
+
+    const dataMap = schemaResponse.data;
+    let emailHtml = `<div style="font-family: Arial, sans-serif; color: #333;">
+      <h2 style="color: #1A75BC;">Call Tracker CRM Data Export</h2>
+      <p>Attached are the CSV export documents generated on ${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy hh:mm a")}.</p>
+      <h3>Export Summary:</h3>
+      <ul>`;
+
+    const attachments = [];
+
+    selectedTabs.forEach(tabKey => {
+      const tabObj = dataMap[tabKey];
+      if (!tabObj || !tabObj.headers || tabObj.headers.length === 0) return;
+
+      emailHtml += `<li><b>${tabObj.label}</b>: ${tabObj.rows.length} record(s)</li>`;
+
+      let csvString = tabObj.headers.map(h => `"${h.replace(/"/g, '""')}"`).join(",") + "\r\n";
+
+      tabObj.rows.forEach(r => {
+        const line = tabObj.headers.map(h => {
+          let val = (r[h] !== undefined && r[h] !== null) ? String(r[h]) : "";
+          return `"${val.replace(/"/g, '""')}"`;
+        }).join(",");
+        csvString += line + "\r\n";
+      });
+
+      const cleanFileName = (tabObj.label || tabKey).replace(/[^a-zA-Z0-9_\-]/g, "_") + ".csv";
+      attachments.push(Utilities.newBlob(csvString, "text/csv", cleanFileName));
+    });
+
+    emailHtml += `</ul><br/><p><i>This automated report was generated from your Call Tracker CRM System.</i></p></div>`;
+
+    if (attachments.length === 0) {
+      return { success: false, error: "No tab data found for selected export criteria." };
+    }
+
+    MailApp.sendEmail({
+      to: recipientEmail,
+      subject: `CRM Export Data - ${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd")}`,
+      htmlBody: emailHtml,
+      attachments: attachments
+    });
+
+    return { success: true, message: `CRM data email dispatched successfully to ${recipientEmail}!` };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
 function getCallTractionMetrics() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
