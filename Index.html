@@ -1,3 +1,6 @@
+Here is the complete **`Index.html`** file incorporating all the features, including the email sending capability and the outcome/status filters in the export modal.
+
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -823,13 +826,13 @@
     </div>
   </div>
 
-  <!-- EXPORT / DOWNLOAD MODAL WITH EMAIL CAPABILITY -->
+  <!-- EXPORT / DOWNLOAD MODAL WITH EMAIL CAPABILITY & OUTCOME FILTER -->
   <div id="exportDataModalOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4">
     <div class="bg-white w-full max-w-xl rounded-xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       <div class="flex items-center justify-between bg-slate-50 border-b border-slate-100 px-5 py-4">
         <div>
           <h2 class="text-md font-bold text-slate-900 tracking-tight">Export CRM Data & Email Reports</h2>
-          <p class="text-[11px] text-slate-400">Download Excel files or dispatch CSV reports to an email address.</p>
+          <p class="text-[11px] text-slate-400">Download Excel files or dispatch CSV reports filtered by outcomes.</p>
         </div>
         <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -864,14 +867,26 @@
             <div id="exportTabsSelectionList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
           </div>
 
+          <!-- OUTCOME / STATUS FILTER SECTION -->
+          <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-200/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block font-bold text-amber-900 uppercase text-[10px] tracking-wider">3. Filter by Outcome / Status</label>
+              <div class="space-x-2 text-[10px]">
+                <button type="button" onclick="selectAllExportOutcomes(true)" class="text-amber-800 font-bold hover:underline cursor-pointer">Select All</button>
+                <button type="button" onclick="selectAllExportOutcomes(false)" class="text-rose-600 font-bold hover:underline cursor-pointer">Clear</button>
+              </div>
+            </div>
+            <div id="exportOutcomesSelectionList" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto custom-scroll p-1"></div>
+          </div>
+
           <div>
-            <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px] tracking-wider">3. Select Columns to Include</label>
+            <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px] tracking-wider">4. Select Columns to Include</label>
             <div id="exportColumnsCustomizerContainer" class="space-y-3"></div>
           </div>
 
           <!-- EMAIL DATA SECTION -->
           <div class="bg-indigo-50/70 p-3 rounded-lg border border-indigo-200 space-y-2">
-            <label class="block font-bold text-indigo-900 uppercase text-[10px] tracking-wider">4. Send Data Report via Email</label>
+            <label class="block font-bold text-indigo-900 uppercase text-[10px] tracking-wider">5. Send Data Report via Email</label>
             <div class="flex flex-col sm:flex-row items-center gap-2">
               <input type="email" id="exportRecipientEmail" placeholder="Enter target email (e.g., user@company.com)..." class="w-full border border-indigo-200 p-2 text-xs rounded-md focus:border-indigo-600 focus:outline-none bg-white text-slate-800">
               <button type="button" id="triggerEmailExecutionBtn" onclick="executeEmailDataSend()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-md transition text-xs cursor-pointer shrink-0 shadow-2xs flex items-center justify-center space-x-1">
@@ -2254,13 +2269,16 @@
 
     function renderExportOptions() {
       const tabsListContainer = document.getElementById('exportTabsSelectionList');
+      const outcomesContainer = document.getElementById('exportOutcomesSelectionList');
       const colsCustomizerContainer = document.getElementById('exportColumnsCustomizerContainer');
 
       tabsListContainer.innerHTML = '';
+      outcomesContainer.innerHTML = '';
       colsCustomizerContainer.innerHTML = '';
       exportSelectedColumns = {};
 
-      Object.keys(exportDataStore).forEach((tabKey, idx) => {
+      // 1. Render Tab Directories
+      Object.keys(exportDataStore).forEach((tabKey) => {
         const tabObj = exportDataStore[tabKey];
         exportSelectedColumns[tabKey] = [...(tabObj.headers || [])];
 
@@ -2300,6 +2318,18 @@
           grid.appendChild(colLabel);
         });
       });
+
+      // 2. Render Unique Outcomes/Statuses Filter
+      const allOutcomes = new Set([...STATUSES, ...CALL_OUTCOMES]);
+      allOutcomes.forEach(outcome => {
+        const itemLabel = document.createElement('label');
+        itemLabel.className = "flex items-center space-x-1.5 text-[11px] text-slate-700 cursor-pointer truncate hover:text-amber-900";
+        itemLabel.innerHTML = `
+          <input type="checkbox" class="exp-outcome-chk rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5" value="${outcome}" checked>
+          <span class="truncate font-medium">${outcome}</span>
+        `;
+        outcomesContainer.appendChild(itemLabel);
+      });
     }
 
     function toggleExportTabSelection(tabKey) {
@@ -2330,6 +2360,18 @@
       updateSelectedColumnsState(tabKey);
     }
 
+    function selectAllExportOutcomes(checkStatus) {
+      const checkboxes = document.querySelectorAll('.exp-outcome-chk');
+      checkboxes.forEach(cb => cb.checked = checkStatus);
+    }
+
+    function getSelectedExportOutcomes() {
+      const selected = [];
+      const checkboxes = document.querySelectorAll('.exp-outcome-chk:checked');
+      checkboxes.forEach(cb => selected.push(cb.value));
+      return selected;
+    }
+
     function updateSelectedColumnsState(tabKey) {
       const checkedCols = [];
       const checkboxes = document.querySelectorAll(`.exp-col-chk-${tabKey}:checked`);
@@ -2341,6 +2383,7 @@
       if (!exportDataStore) return;
 
       const format = document.getElementById('exportFormatType').value || 'xlsm';
+      const selectedOutcomes = getSelectedExportOutcomes();
       const wb = XLSX.utils.book_new();
       let addedSheetCount = 0;
 
@@ -2350,7 +2393,13 @@
           const tabObj = exportDataStore[tabKey];
           const selectedCols = exportSelectedColumns[tabKey] || tabObj.headers;
 
-          const formattedRows = (tabObj.rows || []).map(rowObj => {
+          const filteredRowsList = (tabObj.rows || []).filter(rowObj => {
+            if (selectedOutcomes.length === 0) return true;
+            const rowOutcome = (rowObj["Status"] || rowObj["Outcome"] || rowObj["status"] || rowObj["outcome"] || "").toString().trim();
+            return selectedOutcomes.includes(rowOutcome);
+          });
+
+          const formattedRows = filteredRowsList.map(rowObj => {
             const filteredRow = {};
             selectedCols.forEach(col => {
               filteredRow[col] = rowObj[col] !== undefined ? rowObj[col] : "";
@@ -2366,7 +2415,7 @@
       });
 
       if (addedSheetCount === 0) {
-        displayStatusFeedbackNotification("Please select at least one tab to export.", 'error');
+        displayStatusFeedbackNotification("Please select at least one tab directory to export.", 'error');
         return;
       }
 
@@ -2398,6 +2447,7 @@
         return;
       }
 
+      const selectedOutcomes = getSelectedExportOutcomes();
       const emailBtn = document.getElementById('triggerEmailExecutionBtn');
       emailBtn.disabled = true;
       emailBtn.innerText = "Sending...";
@@ -2418,7 +2468,7 @@
           emailBtn.innerText = "✉️ Email Report";
           displayStatusFeedbackNotification("Failed to send email: " + err.message, 'error');
         })
-        .sendCRMDataEmail(recipientEmail, selectedTabs);
+        .sendCRMDataEmail(recipientEmail, selectedTabs, selectedOutcomes);
     }
 
     function switchViewTab(targetViewKey, skipHistory = false) {
@@ -3776,3 +3826,5 @@
   </script>
 </body>
 </html>
+
+```
